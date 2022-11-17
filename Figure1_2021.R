@@ -1,4 +1,4 @@
-setwd("~/Desktop/Courses/1_Advanced fisheries science/Paper/All_data/Stock_assessment_data_2021")
+#setwd("~/Desktop/Courses/1_Advanced fisheries science/Paper/All_data/Stock_assessment_data_2021")
 
 library(tidyverse)
 library(readxl)
@@ -16,19 +16,19 @@ cod <- read.csv("SA_cod_2021.csv", sep = ",")
 #View(cod)
 
 #lag SSB by one year (age_1)
-# cod <- cod %>% 
+# cod <- cod %>%
 #   mutate( SSB = lag(SSB),
 #           SSB_low_lag = lag(SSB_low),
 #           SSB_high_lag = lag(SSB_high))
 
 #create data sets for SSB regimes
-cod_1 <- cod %>% 
+cod_1 <- cod %>%
   filter(Year %in% c(1963:1972))
 
-cod_2 <- cod %>% 
+cod_2 <- cod %>%
   filter (Year %in% c(1972:1999))
 
-cod_3 <- cod %>% 
+cod_3 <- cod %>%
   filter (Year %in% c(1999:2021))
 
 
@@ -37,9 +37,9 @@ cod_3 <- cod %>%
 
 #SSB in 1000 t
 SSB_cod <- ggplot(cod)+
-  geom_vline(aes(xintercept = 1972), col = "black")+ 
-  #geom_text(label = 1975, x = 1977, y = 320, size = 3)+  
-  geom_vline(aes(xintercept = 1999), col = "black", size = 0.9)+ 
+  geom_vline(aes(xintercept = 1972), col = "black")+
+  #geom_text(label = 1975, x = 1977, y = 320, size = 3)+
+  geom_vline(aes(xintercept = 1999), col = "black", size = 0.9)+
   #geom_text(label = 2006, x = 2008, y = 320, size = 3)+
   geom_ribbon(cod_1, mapping = aes(x=Year, ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "steelblue3", alpha = 0.5)+ #SSB and regimes
   geom_ribbon(cod_2, mapping = aes(x=Year, ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "darkorange", alpha = 0.5)+
@@ -49,14 +49,14 @@ SSB_cod <- ggplot(cod)+
   ylim(0, 350)+
   xlim(1947, 2022)+
   geom_hline(yintercept = 97777/1000, col = "darkorange")+ #MSY Btrigger
-  geom_hline(yintercept = 97777/1000, col = "gray50", linetype = "dashed")+ #Bpa 
+  geom_hline(yintercept = 97777/1000, col = "gray50", linetype = "dashed")+ #Bpa
   geom_hline(yintercept = 69841/1000, col = "gray50", linetype = "dotted")+ #Blim
   #annotate("text", x = 2013, y = 160000/1000, label = "MSY Btrigger", col="black", size = 3.5)+
   #xlab("Year")+ ylab("SSB in 1000 t")+
   #ggtitle("Cod")+
   theme_test()+
   theme(plot.margin = margin(0,0,0,0),
-        plot.background = element_blank(), 
+        plot.background = element_blank(),
         axis.text = element_text(size = 12))+
   #theme(axis.text.x = element_text(angle = 45))+
   xlab("")+ ylab("")
@@ -67,9 +67,9 @@ SSB_cod
 #1979, 1986, 1997
 #R in billions
 recruitment_cod <-  ggplot(cod, aes(Year, R_1/1000000))+
-  #geom_vline(aes(xintercept = 1972), col = "black")+ 
-  #geom_text(label = 1975, x = 1977, y = 320, size = 3)+  
-  #geom_vline(aes(xintercept = 1999), col = "black", size = 0.9)+ 
+  #geom_vline(aes(xintercept = 1972), col = "black")+
+  #geom_text(label = 1975, x = 1977, y = 320, size = 3)+
+  #geom_vline(aes(xintercept = 1999), col = "black", size = 0.9)+
   geom_ribbon(data = cod_1, aes(x = Year, ymax = R_high/1000000, ymin = R_low/1000000), fill = "steelblue3", alpha = 0.5)+
   geom_ribbon(data = cod_2, aes(x = Year, ymax = R_high/1000000, ymin = R_low/1000000), fill = "darkorange", alpha = 0.5)+
   geom_ribbon(data = cod_3, aes(x = Year, ymax = R_high/1000000, ymin = R_low/1000000), fill = "purple")+
@@ -85,7 +85,7 @@ recruitment_cod <-  ggplot(cod, aes(Year, R_1/1000000))+
 recruitment_cod
 
 
-#####f and exploitation rate 
+#####f and exploitation rate
 #catch/SBB = exploitation rate
 cod <- cod %>%
   mutate(all_catches = Landings+Discards,
@@ -126,10 +126,10 @@ haddock <- read.csv("SA_haddock_2021.csv", sep = ",")
 #create data sets for SSB regimes (data starts in 1972)
 #1) 1965-2001
 #2) 2002-2019
-haddock_1 <- haddock %>% 
+haddock_1 <- haddock %>%
   filter(Year %in% c(1965:2001))
 
-haddock_2 <- haddock %>% 
+haddock_2 <- haddock %>%
   filter (Year %in% c(2001:2021))
 
 
@@ -151,7 +151,7 @@ SSB_haddock <- ggplot(haddock)+
   #ggtitle("Haddock")+
   xlim(1947, 2022)+
   theme_test()+
-  theme(plot.margin = margin(0,0,0,0), 
+  theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
         axis.text = element_text(size = 12))
 
@@ -173,14 +173,14 @@ recruitment_haddock <-  ggplot(haddock, aes(Year, R_0/1000000))+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
         axis.text = element_text(size = 12))
-  
+
 
 recruitment_haddock
 
 
 
 
-#####f and exploitation rate 
+#####f and exploitation rate
 #catch/SBB = exploitation rate
 #ages 2-4
 haddock <- haddock %>%
@@ -206,9 +206,9 @@ f_expl_haddock <- ggplot(haddock, aes(Year))+
   theme_test()+
   xlab("") + ylab("")+
   xlim(1947, 2022)+
-  theme(plot.margin = margin(0,0,0,0), 
+  theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))
   #theme(axis.title.x = element_blank(),
        # axis.title.y = element_blank(),
@@ -228,8 +228,8 @@ f_expl_haddock
 # View(pout)
 # pout <- pout%>%
 #   mutate(explr = Catches/SSB)
-# 
-# 
+#
+#
 # poutrange <- mean(pout$SSB)/5
 # SSB_pout <- ggplot(data = pout, aes(x = Year))+
 #   geom_vline(aes(xintercept = 1995), col = "black", linetype = 2)+
@@ -255,9 +255,9 @@ f_expl_haddock
 #   theme(plot.margin = margin(0,0,0,0))+
 #   annotate("text", x = 1990, y = 200, label = "N. pout")
 #   #labs(tag = "N. pout")
-# 
+#
 # SSB_pout
-# 
+#
 # #1989, 1999, 2013
 # R_pout <- ggplot(data = pout, aes(x = Year))+
 #   geom_vline(xintercept = 1989, linetype = 2)+
@@ -269,9 +269,9 @@ f_expl_haddock
 #   scale_x_continuous(breaks = c(1960, 1980, 2000, 2018))+
 #   theme_test()+
 #   theme(plot.margin = margin(0,0,0,0))
-# 
+#
 # R_pout
-# 
+#
 # F_expl_pout <- ggplot(data = pout, aes(x = Year))+
 #   geom_ribbon(aes(ymin = F_low, ymax = F_high), fill = "gray80")+
 #   geom_line(aes(y = F1_2))+
@@ -283,11 +283,11 @@ f_expl_haddock
 #   theme_test()+
 #   theme(plot.margin = margin(0,0,0,0))+
 #   theme(legend.position = "none")
-# 
+#
 # F_expl_pout
-# 
+#
 # #Plaice ####
-plaice <- read.csv("SA_plaice_2021.csv", 
+plaice <- read.csv("SA_plaice_2021.csv",
                    sep = ",")
 
 plaice[is.na(plaice)] <- 0
@@ -302,18 +302,18 @@ plaice <- plaice%>%
 #plarange <- mean(plaice$SSB)/5
 #SSB in 1000t
 SSB_plaice <- ggplot(data = plaice, aes(x = Year))+
-  geom_vline(aes(xintercept = 1969), col = "black")+
+  geom_vline(aes(xintercept = 1969), col = "gray60")+
   #geom_label(label = 1970, x = 1970, y = 1000, size = 3)+
-  geom_vline(aes(xintercept = 1991), col = "black")+
+  geom_vline(aes(xintercept = 1991), col = "gray60")+
   #geom_label(label = 1985, x = 1985, y = 700, size = 3)+
   geom_vline(aes(xintercept = 2007), col = "black", size = 0.9)+
   #geom_label(label = 2008, x = 2008, y = 1000, size = 3)+
   geom_ribbon(data = plaice[plaice$Year <=1969, ],
-              aes(x = Year , ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "green4", alpha = 0.5)+
+              aes(x = Year , ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "gray20", alpha = 0.5)+
   geom_ribbon(data = plaice[plaice$Year  %in%c(1969:1991), ],
-              aes(x = Year ,  ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "steelblue3", alpha = 0.5)+
+              aes(x = Year ,  ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "gray50")+
   geom_ribbon(data = plaice[plaice$Year %in%c(1991:2007), ],
-            aes(x = Year ,  ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "darkorange", alpha = 0.5)+
+            aes(x = Year ,  ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "gray80")+
   geom_ribbon(data = plaice[plaice$Year >=2007, ],
               aes(x = Year , ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "purple")+
   geom_line(aes(y = SSB/1000), color = "black")+
@@ -321,14 +321,14 @@ SSB_plaice <- ggplot(data = plaice, aes(x = Year))+
   geom_hline(aes(yintercept = 564599/1000), color = "darkorange")+ #MSY B trigger
   geom_hline(aes(yintercept = 290203/1000), color = "gray50", lty = "dashed" )+ #Bpa
   geom_hline(aes(yintercept = 207288/1000), color = "gray50", lty = "dotted" )+ #Blim
-  labs(y = "", x = "")+ 
+  labs(y = "", x = "")+
   theme_test()+
   xlim(1947, 2022)+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))
-  
+
 
 SSB_plaice
 
@@ -338,15 +338,15 @@ R_plaice <- ggplot(data = plaice, aes(x = Year))+
   #geom_vline(aes(xintercept = 1991), col = "black")+
   #geom_vline(aes(xintercept = 2007), col = "black", size = 0.9)+
   geom_ribbon(data = plaice[plaice$Year <=1969, ],
-              aes(x = Year , ymin = R_low/1000000, ymax = R_high/1000000), fill = "green4", alpha = 0.5)+
+              aes(x = Year , ymin = R_low/1000000, ymax = R_high/1000000), fill = "gray20", alpha = 0.5)+
   geom_ribbon(data = plaice[plaice$Year  %in%c(1969:1991), ],
-              aes(x = Year ,  ymin = R_low/1000000, ymax = R_high/1000000), fill = "steelblue3", alpha = 0.5)+
+              aes(x = Year ,  ymin = R_low/1000000, ymax = R_high/1000000), fill = "gray50")+
   geom_ribbon(data = plaice[plaice$Year %in%c(1991:2007), ],
-              aes(x = Year ,  ymin = R_low/1000000, ymax = R_high/1000000), fill = "darkorange", alpha = 0.5)+
+              aes(x = Year ,  ymin = R_low/1000000, ymax = R_high/1000000), fill = "gray80")+
   geom_ribbon(data = plaice[plaice$Year >=2007, ],
               aes(x = Year , ymin = R_low/1000000, ymax = R_high/1000000), fill = "purple")+
   geom_line(aes(y = R_1/1000000),  col = "black")+
-  labs(y = "", x = "")+ 
+  labs(y = "", x = "")+
   scale_x_continuous(breaks = c(1960, 1980, 2000, 2018))+
   theme_test()+
   xlim(1947, 2022)+
@@ -356,14 +356,14 @@ R_plaice <- ggplot(data = plaice, aes(x = Year))+
 
 R_plaice
 
-#ages 2 - 6 
+#ages 2 - 6
 F_expl_plaice <- ggplot(data = plaice, aes(x = Year))+
   geom_ribbon(data = plaice[plaice$Year <=1969, ],
-              aes(x = Year , ymin = F_low, ymax = F_high), fill = "green4", alpha = 0.5)+
+              aes(x = Year , ymin = F_low, ymax = F_high), fill = "gray20", alpha = 0.5)+
   geom_ribbon(data = plaice[plaice$Year %in%c(1969:1991), ],
-              aes(x = Year , ymin = F_low, ymax = F_high), fill = "steelblue3", alpha = 0.5)+
+              aes(x = Year , ymin = F_low, ymax = F_high), fill = "gray50")+
   geom_ribbon(data = plaice[plaice$Year %in%c(1991:2007), ],
-              aes(x = Year , ymin = F_low, ymax = F_high), fill = "darkorange", alpha = 0.5)+
+              aes(x = Year , ymin = F_low, ymax = F_high), fill = "gray80")+
   geom_ribbon(data = plaice[plaice$Year >=2007, ],
               aes(x = Year , ymin = F_low, ymax = F_high), fill = "purple")+
   geom_line(aes(y = F_2_6))+
@@ -377,7 +377,7 @@ F_expl_plaice <- ggplot(data = plaice, aes(x = Year))+
   scale_x_continuous(breaks = c(1960, 1980, 2000, 2018))+
   xlim(1947, 2022)+
   theme(plot.margin = margin(0,0,0,0), plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))+
   theme(legend.position = "none")
 
@@ -387,11 +387,11 @@ F_expl_plaice
 # sprat <- read.csv("~/Desktop/Uni/M.Sc.MarineÖkosystemwissenschaften/WS19:20/Article_AF/Sprat/Sprat_ICES_data.csv", sep = ";")
 # names(sprat) <- c("Year", "R_age0", "R_high", "R_low", "SSB", "SSB_high", "SSB_low", "Catches",
 #                   "F1_2", "F_high", "F_low")
-# 
+#
 # sprat <-sprat%>%
 #   mutate(explr = Catches/SSB)
 # View(sprat)
-# 
+#
 # spratrange <- mean(sprat$SSB)/5
 # SSB_sprat <- ggplot(data = sprat, aes(x = Year))+
 #   geom_vline(aes(xintercept = 1982), col = "black", linetype = 2)+
@@ -407,10 +407,10 @@ F_expl_plaice
 #   annotate("text", x = 2000, y = 600, label = "Sprat")+
 #   theme_test()+
 #   theme(plot.margin = margin(0,0,0,0))
-#   
-# 
+#
+#
 # SSB_sprat
-# 
+#
 # #1975, 1977, 1979
 # R_sprat <- ggplot(data = sprat, aes(x = Year))+
 #   geom_vline(xintercept = 1975, linetype = 2)+
@@ -422,9 +422,9 @@ F_expl_plaice
 #   scale_x_continuous(breaks = c(1960, 1980, 2000, 2018))+
 #   theme_test()+
 #   theme(plot.margin = margin(0,0,0,0))
-# 
+#
 # R_sprat
-# 
+#
 # F_expl_sprat <- ggplot(data = sprat, aes(x = Year))+
 #   geom_ribbon(aes(ymin = F_low, ymax = F_high), fill = "gray80")+
 #   geom_line(aes(y = F1_2))+
@@ -436,7 +436,7 @@ F_expl_plaice
 #   theme_test()+
 #   theme(plot.margin = margin(0,0,0,0))+
 #   theme(legend.position = "none")
-# 
+#
 # F_expl_sprat
 
 
@@ -448,7 +448,7 @@ herring <-read.csv("SA_herring_2021.csv", sep = ",")
 #View(herring)
 
 herring <- herring %>% mutate(
-  exploit_rate = t_catch/SSB)
+  exploit_rate = Total_Catch/SSB)
 
 herring2<- herring %>%
   filter(Year %in% c(1947:1966))
@@ -464,33 +464,33 @@ ssb_herring <- ggplot(herring)+ ylab ("")+
   geom_vline(aes(xintercept = 1983), col = "black")+
   geom_vline(aes(xintercept = 2000), col = "black", size = 0.9)+
   geom_ribbon(data= herring[herring$Year < 1966, ],
-              mapping = aes(Year, ymin= SSB_low/1000, ymax = SSB_high/1000, 
+              mapping = aes(Year, ymin= SSB_low/1000, ymax = SSB_high/1000,
                             fill = "Regime 1"),fill="green4", show.legend = F, alpha = 0.5)+
   geom_ribbon(data= herring[herring$Year %in% c(1966:1983), ],
-              mapping = aes(Year, ymin= SSB_low/1000, ymax = SSB_high/1000, 
+              mapping = aes(Year, ymin= SSB_low/1000, ymax = SSB_high/1000,
                             fill = "Regime 2"),fill="steelblue3", show.legend = F,alpha = 0.5)+
   geom_ribbon(data= herring[herring$Year %in% c(1983:2000), ],
-              mapping = aes(Year, ymin= SSB_low/1000, ymax = SSB_high/1000, 
+              mapping = aes(Year, ymin= SSB_low/1000, ymax = SSB_high/1000,
                             fill = "Regime 3"),fill="darkorange", show.legend = F,alpha = 0.5)+
   geom_ribbon(data= herring[herring$Year >= 2000, ],
-              mapping = aes(Year, ymin= SSB_low/1000, ymax = SSB_high/1000, 
+              mapping = aes(Year, ymin= SSB_low/1000, ymax = SSB_high/1000,
                             fill = "Regime 4"),fill="purple", show.legend = F)+
   geom_line(aes(Year, SSB/1000), color = "black")+
   geom_hline(yintercept = 1232828/1000, col="darkorange" ) + #Btrigger
   geom_hline(yintercept = 956483/1000, col="gray50",lty = "dashed") + #Bpa
   geom_hline(yintercept = 874198/1000, col="gray50",lty = "dotted") + #Blim
-  #annotate("text",x=1955,y=1, label= " MSYBtrigger", col="darkorange" ,size=5  ,fontface="bold" ) + 
-  theme_test() + 
+  #annotate("text",x=1955,y=1, label= " MSYBtrigger", col="darkorange" ,size=5  ,fontface="bold" ) +
+  theme_test() +
   scale_x_continuous(breaks = c(1960, 1980, 2000, 2018))+
   xlim(1947, 2022)+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))+
   labs(x = "", y = "")
 
 
-ssb_herring 
+ssb_herring
 
 #Recruitment _Herring
 #in billions
@@ -507,21 +507,21 @@ R_herring<- ggplot(data=herring, aes(x=Year, y=R_0/1000000)) + ylab("")+ xlab(""
   geom_ribbon(data= herring[herring$Year >= 2000, ], aes(ymin = R_low/1000000,  ymax = R_high/1000000), fill = "purple")+
   geom_line(col = "black")+
   #geom_errorbar(aes(ymin=l_R, ymax=h_R), width=.2,position=position_dodge(.9))+
-  theme_test() + 
+  theme_test() +
   scale_x_continuous(breaks = c(1960, 1980, 2000, 2018))+
   scale_y_continuous(breaks = c(0, 50, 100))+
   labs(x = "", y = "")+
   xlim(1947, 2022)+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))
 #theme(axis.text = element_text(colour = "black",size = "15",face = "bold"))
 R_herring
 
 #F/Exploitation rate
 
-#ages 2-6 
+#ages 2-6
 f_exp_herring <- ggplot(herring, aes(Year))+
   #geom_area(aes(y=exploit_rate/10),alpha=0.7, fill="skyblue2")+
   geom_ribbon(data= herring[herring$Year < 1966, ],
@@ -530,7 +530,7 @@ f_exp_herring <- ggplot(herring, aes(Year))+
               aes(ymin= F_low, ymax= F_high), fill = "steelblue3", alpha = 0.5)+
   geom_ribbon(data= herring[herring$Year %in% c(1983:2000), ],
               aes(ymin= F_low, ymax= F_high), fill = "darkorange", alpha = 0.5)+
-  geom_ribbon(data= herring[herring$Year >= 2000, ], 
+  geom_ribbon(data= herring[herring$Year >= 2000, ],
               aes(ymin= F_low, ymax= F_high), fill = "purple")+
   geom_line(aes(Year, F_2_6), col="black")+
   geom_hline(yintercept = 0.31, col="darkorange") + #Fmsy
@@ -545,7 +545,7 @@ f_exp_herring <- ggplot(herring, aes(Year))+
   xlim(1947, 2022)+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))
 
 f_exp_herring
@@ -586,7 +586,7 @@ saithe_F_Expl<-ggplot(df_saithe)+
   geom_ribbon(data = df_saithe4, aes(x=Year, ymin=F_low, ymax=F_high), fill="purple")+
   #geom_area(mapping=aes(x=Year, y=exploit_rate, alpha=0.7),fill="skyblue2", show.legend = F)+
   geom_line(aes(Year, F_4_7), color="black")+
-  xlab(" ")+ 
+  xlab(" ")+
   ylab("")+
   #scale_y_continuous(sec.axis = sec_axis(~./4))+
   geom_hline(yintercept = 0.363, color = "darkorange")+ #FMSY
@@ -599,7 +599,7 @@ saithe_F_Expl<-ggplot(df_saithe)+
   xlim(1947, 2022)+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))
 
 saithe_F_Expl
@@ -623,7 +623,7 @@ saithe_SSB <-ggplot(df_saithe)+
   xlim(1947, 2022)+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))
 
 saithe_SSB
@@ -643,7 +643,7 @@ saithe_R <-ggplot(df_saithe)+
   xlim(1947, 2022)+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))
 saithe_R
 
@@ -691,18 +691,18 @@ hake_F_Expl<-ggplot(df_hake)+
   geom_hline(yintercept = 1.02, color = "gray50", lty = "dashed")+ #Fpa
   theme_test()+
   xlim(1947, 2022)+
-  theme(plot.margin = margin(0,0,0,0), 
+  theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))
 
 hake_F_Expl
 
 #hakerange <- mean(df_hake$SSB)/5
 hake_SSB <-ggplot(df_hake)+
-  geom_vline(aes(xintercept = 1985), col = "black")+ 
+  geom_vline(aes(xintercept = 1985), col = "black")+
   #geom_label(label = 1986, x = 1986, y = 300, size = 3)+
-  geom_vline(aes(xintercept = 2010), col = "black", size = 0.9)+ 
+  geom_vline(aes(xintercept = 2010), col = "black", size = 0.9)+
   #geom_label(label = 2008, x = 2008, y = 300, size =3)+
   geom_ribbon(data=df_hake2, aes(Year, ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "steelblue3", show.legend = F, alpha = 0.5)+
   geom_ribbon(data=df_hake3, aes(Year, ymin = SSB_low/1000, ymax = SSB_high/1000), fill = "darkorange", show.legend = F, alpha = 0.5)+
@@ -713,7 +713,7 @@ hake_SSB <-ggplot(df_hake)+
   theme_test()+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))+
   xlim(1947, 2022)+
   geom_hline(yintercept = 56000/1000, color = "darkorange")+ #Btrigger
@@ -724,8 +724,8 @@ hake_SSB
 
 #no cpts, in billions
 hake_R <-ggplot(df_hake)+
-  #geom_vline(aes(xintercept = 1985), col = "black")+ 
-  #geom_vline(aes(xintercept = 2010), col = "black", size = 0.9)+ 
+  #geom_vline(aes(xintercept = 1985), col = "black")+
+  #geom_vline(aes(xintercept = 2010), col = "black", size = 0.9)+
   geom_ribbon(data = df_hake2, aes(x=Year, ymin=R_low/100, ymax=R_high/100), fill = "steelblue3", alpha = 0.5)+
   geom_ribbon(data = df_hake3, aes(x=Year, ymin=R_low/100, ymax=R_high/100), fill = "darkorange", alpha = 0.5)+
   geom_ribbon(data = df_hake4, aes(x=Year, ymin=R_low/100, ymax=R_high/100), fill = "purple")+
@@ -736,7 +736,7 @@ hake_R <-ggplot(df_hake)+
   xlim(1947, 2022)+
   theme(plot.margin = margin(0,0,0,0),
         plot.background = element_blank(),
-        
+
         axis.text = element_text(size = 12))
 
 hake_R
@@ -755,18 +755,18 @@ hake_R
 #                         nrow = 8, ncol = 3)
 
 
-#same margins 
+#same margins
 #install.packages("patchwork")
 library(patchwork)
-SSB_plaice + R_plaice + F_expl_plaice+
-  hake_SSB+ hake_R+ hake_F_Expl+
-  ssb_herring+R_herring+f_exp_herring+
-  SSB_sprat+ R_sprat+ F_expl_sprat+
-  SSB_haddock+ recruitment_haddock+f_expl_haddock+ 
-  saithe_SSB+ saithe_R+ saithe_F_Expl+
-  SSB_pout+ R_pout+ F_expl_pout+
-  SSB_cod+ recruitment_cod+ f_expl_cod +
-  plot_layout(ncol = 3)
+# SSB_plaice + R_plaice + F_expl_plaice+
+#   hake_SSB+ hake_R+ hake_F_Expl+
+#   ssb_herring+R_herring+f_exp_herring+
+#   SSB_sprat+ R_sprat+ F_expl_sprat+
+#   SSB_haddock+ recruitment_haddock+f_expl_haddock+
+#   saithe_SSB+ saithe_R+ saithe_F_Expl+
+#   SSB_pout+ R_pout+ F_expl_pout+
+#   SSB_cod+ recruitment_cod+ f_expl_cod +
+#   plot_layout(ncol = 3)
 
 
 #without sprat and Norway Pout
@@ -788,8 +788,8 @@ R_plaice + F_expl_plaice + SSB_plaice +
   plot_layout(ncol = 3)
 
 
-# 
-# 
+#
+#
 #first 4 species
 #same margins
 # SSB_plaice + R_plaice+ F_expl_plaice+
