@@ -17,7 +17,7 @@ library(readxl)
 # "purple"
 
 #1. Plaice ----
-plaice <- read.csv("SA_plaice_2021.csv", 
+plaice <- read.csv("SA_plaice_2021.csv",
                             sep = ",")
 View(plaice)
 
@@ -50,26 +50,26 @@ fitI <- fitted(m1)
 
 #1.2. Beverton Holt ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="BevertonHolt")
-svR 
+svR
 ###stock-recruitement function (NB, the function is log based!)
 bh <- srFuns("BevertonHolt")
 srR_beverton <- nls(log(R)~log(bh(ssb,a,b)), data=ns_data, start=svR)
 
 
 ##results tell you significance of parameters and residual standard error
-#resisual standard error is the square root of the residual sum of squares 
+#resisual standard error is the square root of the residual sum of squares
 #divided by degrees of freedom
 summary(srR_beverton)
 cbind(estimates=coef(srR_beverton), confint(srR_beverton))
-### make predictions to then plot! 
+### make predictions to then plot!
 pR_beverton <- bh(ns_data$ssb, a=coef(srR_beverton))
 ns_data$pR_beverton <- pR_beverton
-###quasi-r2 value, if low model does not fit well! 
+###quasi-r2 value, if low model does not fit well!
 cor(bh(ns_data$ssb, a=coef(srR_beverton)), ns_data$R)^2
 
 #1.3. Ricker ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="Ricker")
-svR 
+svR
 ##fit the Ricker function to data
 rckr <- srFuns("Ricker")
 srR_ricker <- nls(log(R)~log(rckr(ssb,a,b)), data=ns_data, start=svR)
@@ -104,7 +104,7 @@ brpt_plaice_log <- seg_plaice_log$psi[2]
 brpt_ste_plaice_log <- seg_plaice_log$psi[3]
 
 #1.6. Segmented with best performing GLM ----
-#1.6.1. glm with gaussian 
+#1.6.1. glm with gaussian
 plaice_gaus <- glm(R_1 ~ SSB_lag, data = plaice, family = gaussian)
 summary(plaice_gaus)
 2.4868e+13/62 #401096774194, clear overdispersion
@@ -137,7 +137,7 @@ summary(plaice_negbi)
 plot(plaice_negbi)
 #slightly better than the quasipoisson model -> use negative binomial for the segmented analysis
 
-mean(plaice$SSB_lag, na.rm = T) 
+mean(plaice$SSB_lag, na.rm = T)
 seg_plaice_negbi <- segmented::segmented(glm.nb(R_1 ~SSB_lag, data = plaice), seg.Z =  ~SSB_lag, psi = mean(plaice$SSB_lag, na.rm = T))
 summary(seg_plaice_negbi)
 summary(seg_plaice_negbi)$psi
@@ -153,7 +153,7 @@ bpts <- strucchange::breakpoints(R_1 ~ SSB_lag, data = plaice)
 
 
 plot(bpts)
-summary(bpts)  
+summary(bpts)
 
 
 opt_bpts <- function(x) {
@@ -185,12 +185,12 @@ for (i in 1: opt_brks) {
 }
 
 
-## fit null hypothesis model 
+## fit null hypothesis model
 fm0 <- lm(R_1 ~ SSB_lag, data = plaice)
 # fit model with 2 breakpoint but formula different than in previous time series:
 
 ######cannot find "best_brk"
-strucc_plaice <- lm(R_1 ~ SSB_lag*(SSB_lag <= best_brk[1]) + 
+strucc_plaice <- lm(R_1 ~ SSB_lag*(SSB_lag <= best_brk[1]) +
                       SSB_lag*(SSB_lag >= best_brk[1] & SSB_lag <= best_brk[2]) +
                       SSB_lag*(SSB_lag >= best_brk[2]), data = plaice)
 fm1_coef <- coef(strucc_plaice)
@@ -206,18 +206,18 @@ lines(plaice$SSB_lag[plaice$SSB_lag <= best_brk[1]], fit1, col = "orange")
 lines(plaice$SSB_lag[plaice$SSB_lag > best_brk[1] & plaice$SSB_lag<= best_brk[2]], fit2, col = "orange")
 lines(plaice$SSB_lag[plaice$SSB_lag > best_brk[2]], fit3, col = "orange")
 
-#1.8. Visualize and compare with RMSE ---- 
-SRR_plaice_models <- SRR_plaice + 
+#1.8. Visualize and compare with RMSE ----
+SRR_plaice_models <- SRR_plaice +
   geom_vline(aes(col = "seg. neg bi",xintercept = brpt_plaice_negbi/1000), linetype = 2)+
-  #geom_segment(y = 800, yend = 800, x = brpt_plaice_negbi/1000000-brpt_ste_plaice_negbi/1000000, 
+  #geom_segment(y = 800, yend = 800, x = brpt_plaice_negbi/1000000-brpt_ste_plaice_negbi/1000000,
   #            xend = brpt_plaice_negbi/1000000+brpt_ste_plaice_negbi/1000000, col = "red")+
   geom_line(aes(y = coef_plaice_negbi/1000, col = "seg. neg bi"))+
   geom_vline(aes(col = "segmented", xintercept = brpt_plaice/1000), linetype = 2)+
-  #geom_segment(y = 20, yend = 20, x = brpt_plaice/1000000-brpt_ste_plaice/1000000, 
+  #geom_segment(y = 20, yend = 20, x = brpt_plaice/1000000-brpt_ste_plaice/1000000,
   #            xend = brpt_plaice/1000000+brpt_ste_plaice/1000000, col = "red")+
   geom_line(aes(y = coef_plaice/1000, col = "segmented"))+
   geom_vline(aes(col = "segmented log", xintercept = exp(brpt_plaice_log)/1000), linetype = 2)+
-  #geom_segment(y = 0.5, yend = 0.5, x = exp(brpt_plaice_log)/1000000-exp(brpt_ste_plaice_log)/1000000, 
+  #geom_segment(y = 0.5, yend = 0.5, x = exp(brpt_plaice_log)/1000000-exp(brpt_ste_plaice_log)/1000000,
   #            xend = exp(brpt_plaice_log)/1000000+exp(brpt_ste_plaice_log)/1000000, col = "red")+
   geom_line(aes(y = exp(coef_plaice_log)/1000, col = "segmented log"))+
   geom_line(data = ns_data, aes(ssb/100,pR_ricker/1000, col = "Ricker"), show.legend = TRUE)+ #Ricker
@@ -262,9 +262,9 @@ comparison
 #lowest RMSE has the simple segmented analysis
 
 #2.Cod ----
-cod <- read.csv("SA_cod_2021.csv", 
+cod <- read.csv("SA_cod_2021.csv",
                    sep = ",")
-cod <- cod %>% 
+cod <- cod %>%
   mutate( SSB_lag = lag(SSB))
 
 
@@ -285,26 +285,26 @@ fitI <- fitted(m1)
 
 #3.2. Beverton Holt ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="BevertonHolt")
-svR 
+svR
 ###stock-recruitement function (NB, the function is log based!)
 bh <- srFuns("BevertonHolt")
 srR_beverton <- nls(log(R)~log(bh(ssb,a,b)), data=ns_data, start=svR)
 
 
 ##results tell you significance of parameters and residual standard error
-#resisual standard error is the square root of the residual sum of squares 
+#resisual standard error is the square root of the residual sum of squares
 #divided by degrees of freedom
 summary(srR_beverton)
 cbind(estimates=coef(srR_beverton), confint(srR_beverton))
-### make predictions to then plot! 
+### make predictions to then plot!
 pR_beverton <- bh(ns_data$ssb, a=coef(srR_beverton))
 ns_data$pR_beverton <- pR_beverton
-###quasi-r2 value, if low model does not fit well! 
+###quasi-r2 value, if low model does not fit well!
 cor(bh(ns_data$ssb, a=coef(srR_beverton)), ns_data$R)^2
 
 #3.3. Ricker ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="Ricker")
-svR 
+svR
 ##fit the Ricker function to data
 rckr <- srFuns("Ricker")
 srR_ricker <- nls(log(R)~log(rckr(ssb,a,b)), data=ns_data, start=svR)
@@ -371,7 +371,7 @@ summary(cod_negbi)
 plot(cod_negbi)
 #slightly better than the quasipoisson model -> use negative binomial for the segmented analysis
 
-mean(cod$SSB_lag, na.rm = T) 
+mean(cod$SSB_lag, na.rm = T)
 seg_cod_negbi <- segmented::segmented(glm.nb(R_1 ~SSB_lag, data = cod), seg.Z =  ~SSB_lag, psi = mean(cod$SSB_lag, na.rm = T))
 summary(seg_cod_negbi)
 summary(seg_cod_negbi)$psi
@@ -385,7 +385,7 @@ bpts <- breakpoints(R_1 ~ SSB_lag, data = cod)
 
 
 plot(bpts)
-summary(bpts)  
+summary(bpts)
 
 
 opt_bpts <- function(x) {
@@ -417,7 +417,7 @@ for (i in 1: opt_brks) {
 }
 
 
-## fit null hypothesis model 
+## fit null hypothesis model
 fm0 <- lm(R_1 ~ SSB_lag, data = cod)
 # fit model with 1 breakpoint but formula different then in previous time series:
 
@@ -426,7 +426,7 @@ fm0 <- lm(R_1 ~ SSB_lag, data = cod)
 ######cannot find "best_brk"
 #best_brk 1
 strucc_cod1 <- lm(R_1 ~ SSB_lag*(SSB_lag < best_brk[1]) + SSB_lag*(SSB_lag > best_brk[1]), data = cod)
-fm1_coef1 <- coef(strucc_cod1) 
+fm1_coef1 <- coef(strucc_cod1)
 fit_strucc1 <- fitted(strucc_cod1)
 
 fit11 <- (fm1_coef1[1] + fm1_coef1[3]) + (fm1_coef1[2] + fm1_coef1[5])*cod$SSB_lag[cod$SSB_lag <= best_brk[1]]
@@ -434,7 +434,7 @@ fit12 <- (fm1_coef1[1] + fm1_coef1[4]) + (fm1_coef1[2])*cod$SSB_lag[cod$SSB_lag>
 
 #brest_brk 2
 strucc_cod2 <- lm(R_1 ~ SSB_lag*(SSB_lag < best_brk[2]) + SSB_lag*(SSB_lag > best_brk[2]), data = cod)
-fm1_coef2 <- coef(strucc_cod2) 
+fm1_coef2 <- coef(strucc_cod2)
 fit_strucc2 <- fitted(strucc_cod2)
 
 fit21 <- (fm1_coef2[1] + fm1_coef2[3]) + (fm1_coef2[2] + fm1_coef2[5])*cod$SSB_lag[cod$SSB_lag <= best_brk[2]]
@@ -447,8 +447,8 @@ lines(cod$SSB_lag[cod$SSB_lag >= best_brk[1]], fit12, col = "orange")
 lines(cod$SSB_lag[cod$SSB_lag <= best_brk[2]], fit21, col = "orange")
 lines(cod$SSB_lag[cod$SSB_lag >= best_brk[2]], fit22, col = "orange")
 
-#3.8. Visualize and compare with RMSE ---- 
-SRR_cod_models <- ggplot(ns_data, aes(SSB_lag/1000, R_1/1000000)) + 
+#3.8. Visualize and compare with RMSE ----
+SRR_cod_models <- ggplot(ns_data, aes(SSB_lag/1000, R_1/1000000)) +
   geom_point(col=color_regimes_cod)+
   geom_vline(aes(col = "seg. neg bi",xintercept = brpt_cod_negbi/1000000), linetype = 2)+
   geom_line(aes(y = coef_cod_negbi/1000000, col = "seg. neg bi"))+
@@ -480,7 +480,7 @@ comparison[7, 3] <- rmse(sim = fit_strucc, obs = cod$R_1)
 comparison
 
 
- 
+
 ###############Outcome
 
 # df                    AIC       V3
@@ -497,9 +497,9 @@ comparison
 
 
 
-#4.Haddock ---- 
+#4.Haddock ----
 
-haddock <- read.csv("SA_haddock_2021.csv", 
+haddock <- read.csv("SA_haddock_2021.csv",
                        sep = ",")
 
 
@@ -523,7 +523,7 @@ svR #negative starting values
 
 
 
-#choose own starting values for a and b 
+#choose own starting values for a and b
 svR2 <- list(a = 1000, b = 0.007)
 svR2
 
@@ -534,15 +534,15 @@ bh <- srFuns("BevertonHolt")
 srR_beverton <- nls(log(R)~log(bh(SSB,a,b)), data=ns_data, start=list(a = 76.79568, b = 5.458455e-06))#######doesn't work, no matter which starting values are tried
 summary(srR_beverton)
 cbind(estimates=coef(srR_beverton), confint(srR_beverton))
-### make predictions to then plot! 
+### make predictions to then plot!
 pR_beverton <- bh(ns_data$SSB, a=coef(srR_beverton))
 ns_data$pR_beverton <- pR_beverton
-###quasi-r2 value, if low model does not fit well! 
+###quasi-r2 value, if low model does not fit well!
 cor(bh(ns_data$SSB, a=coef(srR_beverton)), ns_data$R)^2
 
 #4.3. Ricker ----
 svR <- srStarts(R ~ SSB, data=ns_data, type="Ricker")
-svR 
+svR
 ##fit the Ricker function to data
 rckr <- srFuns("Ricker")
 srR_ricker <- nls(log(R)~log(rckr(SSB,a,b)), data=ns_data, start=svR)
@@ -583,7 +583,7 @@ summary(haddock_gaus)
 par(mfrow = c(2,2))
 plot(haddock_gaus)
 
-#4.6.2. glm with poisson ---- 
+#4.6.2. glm with poisson ----
 haddock_pois <- glm(R_0 ~ SSB, data = haddock, family = poisson)
 summary(haddock_pois)
 574558105/48 #11969961, clear overdispersion
@@ -591,7 +591,7 @@ summary(haddock_pois)
 plot(haddock_pois)
 #better, but overdispersed
 
-#4.6.3. glm with quasipoisson ---- 
+#4.6.3. glm with quasipoisson ----
 haddock_qpois <- glm(R_0 ~ SSB, data = haddock, family = quasipoisson)
 summary(haddock_qpois)
 
@@ -607,7 +607,7 @@ summary(haddock_negbi)
 plot(haddock_negbi)
 #slightly better than the quasipoisson model -> use negative binomial for the segmented analysis
 
-mean(haddock$SSB, na.rm = T) 
+mean(haddock$SSB, na.rm = T)
 seg_haddock_negbi <- segmented::segmented(glm.nb(R_0 ~SSB, data = haddock), seg.Z =  ~SSB, psi = mean(haddock$SSB, na.rm = T))
 summary(seg_haddock_negbi)
 summary(seg_haddock_negbi)$psi
@@ -621,7 +621,7 @@ bpts <- strucchange :: breakpoints(R_0 ~ SSB, data = haddock)
 
 
 plot(bpts)
-summary(bpts)  
+summary(bpts)
 
 
 opt_bpts <- function(x) {
@@ -653,7 +653,7 @@ for (i in 1: opt_brks) {
 }
 
 
-## fit null hypothesis model 
+## fit null hypothesis model
 fm0 <- lm(R_0 ~ SSB, data = haddock)
 # fit model with 1 breakpoint but formula different then in previous time series:
 
@@ -661,7 +661,7 @@ fm0 <- lm(R_0 ~ SSB, data = haddock)
 
 ######cannot find "best_brk"
 strucc_haddock <- lm(R_0 ~ SSB*(SSB < best_brk) + SSB*(SSB > best_brk), data = haddock)
-fm1_coef <- coef(strucc_haddock) 
+fm1_coef <- coef(strucc_haddock)
 
 fit_strucc <- fitted(strucc_haddock)
 
@@ -674,9 +674,9 @@ lines(haddock$SSB[haddock$SSB <= best_brk], fit1, col = "orange")
 lines(haddock$SSB[haddock$SSB >= best_brk], fit2, col = "orange")
 
 
-#4.8. Visualize and compare with RMSE ---- 
-SRR_haddock_models <- ggplot(haddock, aes(SSB/1000, R_0/1000000)) + 
-  geom_point()+ 
+#4.8. Visualize and compare with RMSE ----
+SRR_haddock_models <- ggplot(haddock, aes(SSB/1000, R_0/1000000)) +
+  geom_point()+
   geom_vline(aes(col = "seg. neg bi",xintercept = brpt_haddock_negbi/1000), linetype = 2)+
   geom_line(aes(y = coef_haddock_negbi/1000000, col = "seg. neg bi"))+
   geom_vline(aes(col = "segmented", xintercept = brpt_haddock/1000), linetype = 2)+
@@ -697,7 +697,7 @@ rmse <- function(sim, obs) {
 }
 
 
-#leave out srR_beverton --> doesn't work with NAs 
+#leave out srR_beverton --> doesn't work with NAs
 
 comparison <- NULL
 comparison <- AIC(m1,srR_ricker, seg_haddock, seg_haddock_log, seg_haddock_negbi, strucc_haddock)
@@ -725,7 +725,7 @@ comparison
 
 #5.Herring ----
 
-herring <- read.csv("SA_herring_2021.csv", 
+herring <- read.csv("SA_herring_2021.csv",
                     sep = ",")
 herring <- arrange(herring, SSB)
 #herring <- arrange(herring, SSB)
@@ -756,26 +756,26 @@ fitI <- fitted(m1)
 
 #1.2. Beverton Holt ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="BevertonHolt")
-svR 
+svR
 ###stock-recruitement function (NB, the function is log based!)
 bh <- srFuns("BevertonHolt")
 srR_beverton <- nls(log(R)~log(bh(ssb,a,b)), data=ns_data, start=svR)
 
 
 ##results tell you significance of parameters and residual standard error
-#resisual standard error is the square root of the residual sum of squares 
+#resisual standard error is the square root of the residual sum of squares
 #divided by degrees of freedom
 summary(srR_beverton)
 cbind(estimates=coef(srR_beverton), confint(srR_beverton))
-### make predictions to then plot! 
+### make predictions to then plot!
 pR_beverton <- bh(ns_data$ssb, a=coef(srR_beverton))
 ns_data$pR_beverton <- pR_beverton
-###quasi-r2 value, if low model does not fit well! 
+###quasi-r2 value, if low model does not fit well!
 cor(bh(ns_data$ssb, a=coef(srR_beverton)), ns_data$R)^2
 
 #1.3. Ricker ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="Ricker")
-svR 
+svR
 ##fit the Ricker function to data
 rckr <- srFuns("Ricker")
 srR_ricker <- nls(log(R)~log(rckr(ssb,a,b)), data=ns_data, start=svR)
@@ -810,7 +810,7 @@ brpt_herring_log <- seg_herring_log$psi[2]
 brpt_ste_herring_log <- seg_herring_log$psi[3]
 
 #1.6. Segmented with best performing GLM ----
-#1.6.1. glm with gaussian 
+#1.6.1. glm with gaussian
 herring_gaus <- glm(R_0 ~ SSB, data = herring, family = gaussian)
 summary(herring_gaus)
 1.6091e+16/73 #2.204247e+14, clear overdispersion
@@ -843,7 +843,7 @@ summary(herring_negbi)
 plot(herring_negbi)
 #slightly better than the quasipoisson model -> use negative binomial for the segmented analysis
 
-mean(herring$SSB, na.rm = T) 
+mean(herring$SSB, na.rm = T)
 seg_herring_negbi <- segmented::segmented(glm.nb(R_0 ~SSB, data = herring), seg.Z =  ~SSB, psi = mean(herring$SSB, na.rm = T))
 summary(seg_herring_negbi)
 summary(seg_herring_negbi)$psi
@@ -857,7 +857,7 @@ bpts <- strucchange :: breakpoints(R_0 ~ SSB, data = herring)
 
 
 plot(bpts)
-summary(bpts)  
+summary(bpts)
 
 
 opt_bpts <- function(x) {
@@ -889,7 +889,7 @@ for (i in 1: opt_brks) {
 }
 
 
-## fit null hypothesis model 
+## fit null hypothesis model
 fm0 <- lm(R_0 ~ SSB, data = herring)
 # fit model with 1 breakpoint but formula different then in previous time series:
 
@@ -897,7 +897,7 @@ fm0 <- lm(R_0 ~ SSB, data = herring)
 
 ######cannot find "best_brk"
 strucc_herring <- lm(R_0 ~ SSB*(SSB < best_brk) + SSB*(SSB > best_brk), data = herring)
-fm1_coef <- coef(strucc_herring) 
+fm1_coef <- coef(strucc_herring)
 
 fit_strucc <- fitted(strucc_herring)
 
@@ -909,18 +909,18 @@ lines(herring$SSB, fitted(fm0), col = 3)
 lines(herring$SSB[herring$SSB <= best_brk], fit1, col = "orange")
 lines(herring$SSB[herring$SSB >= best_brk], fit2, col = "orange")
 
-#1.8. Visualize and compare with RMSE ---- 
-SRR_herring_models <- SRR_herring + 
+#1.8. Visualize and compare with RMSE ----
+SRR_herring_models <- SRR_herring +
   geom_vline(aes(col = "seg. neg bi",xintercept = brpt_herring_negbi/1000), linetype = 2)+
-  #geom_segment(y = 800, yend = 800, x = brpt_herring_negbi/1000000-brpt_ste_herring_negbi/1000000, 
+  #geom_segment(y = 800, yend = 800, x = brpt_herring_negbi/1000000-brpt_ste_herring_negbi/1000000,
   #            xend = brpt_herring_negbi/1000000+brpt_ste_herring_negbi/1000000, col = "red")+
   geom_line(aes(y = coef_herring_negbi/10000000, col = "seg. neg bi"))+
   geom_vline(aes(col = "segmented", xintercept = brpt_herring/1000), linetype = 2)+
-  #geom_segment(y = 20, yend = 20, x = brpt_herring/1000000-brpt_ste_herring/1000000, 
+  #geom_segment(y = 20, yend = 20, x = brpt_herring/1000000-brpt_ste_herring/1000000,
   #            xend = brpt_herring/1000000+brpt_ste_herring/1000000, col = "red")+
   geom_line(aes(y = coef_herring/1000000, col = "segmented"))+
   geom_vline(aes(col = "segmented log", xintercept = exp(brpt_herring_log)/1000), linetype = 2)+
-  #geom_segment(y = 0.5, yend = 0.5, x = exp(brpt_herring_log)/1000000-exp(brpt_ste_herring_log)/1000000, 
+  #geom_segment(y = 0.5, yend = 0.5, x = exp(brpt_herring_log)/1000000-exp(brpt_ste_herring_log)/1000000,
   #            xend = exp(brpt_herring_log)/1000000+exp(brpt_ste_herring_log)/1000000, col = "red")+
   geom_line(aes(y = exp(coef_herring_log)/1000000, col = "segmented log"))+
   geom_line(data = ns_data, aes(ssb/1000,pR_ricker/1000000, col = "Ricker"), show.legend = TRUE)+ #Ricker
@@ -994,26 +994,26 @@ fitI <- fitted(m1)
 
 #7.2. Beverton Holt ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="BevertonHolt")
-svR 
+svR
 ###stock-recruitement function (NB, the function is log based!)
 bh <- srFuns("BevertonHolt")
 srR_beverton <- nls(log(R)~log(bh(ssb,a,b)), data=ns_data, start=list(a = svR$a, b = svR$b))
 
 
 ##results tell you significance of parameters and residual standard error
-#resisual standard error is the square root of the residual sum of squares 
+#resisual standard error is the square root of the residual sum of squares
 #divided by degrees of freedom
 summary(srR_beverton)
 cbind(estimates=coef(srR_beverton), confint(srR_beverton))
-### make predictions to then plot! 
+### make predictions to then plot!
 pR_beverton <- bh(ns_data$ssb, a=coef(srR_beverton))
 ns_data$pR_beverton <- pR_beverton
-###quasi-r2 value, if low model does not fit well! 
+###quasi-r2 value, if low model does not fit well!
 cor(bh(ns_data$ssb, a=coef(srR_beverton)), ns_data$R)^2
 
 #7.3. Ricker ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="Ricker")
-svR 
+svR
 ##fit the Ricker function to data
 rckr <- srFuns("Ricker")
 srR_ricker <- nls(log(R)~log(rckr(ssb,a,b)), data=ns_data, start=list(a = svR$a, b = svR$b))
@@ -1080,7 +1080,7 @@ summary(hake_negbi)
 plot(hake_negbi)
 #slightly better than the quasipoisson model -> use negative binomial for the segmented analysis
 
-mean(hake$SSB, na.rm = T) 
+mean(hake$SSB, na.rm = T)
 seg_hake_negbi <- segmented::segmented(glm.nb(R_0 ~SSB, data = hake), seg.Z =  ~SSB, psi = mean(hake$SSB, na.rm = T))
 summary(seg_hake_negbi)
 summary(seg_hake_negbi)$psi
@@ -1094,7 +1094,7 @@ bpts <- strucchange :: breakpoints(R_0 ~ SSB, data = hake)
 
 
 plot(bpts)
-summary(bpts)  
+summary(bpts)
 
 
 opt_bpts <- function(x) {
@@ -1126,7 +1126,7 @@ for (i in 1: opt_brks) {
 }
 
 
-## fit null hypothesis model 
+## fit null hypothesis model
 fm0 <- lm(R_0 ~ SSB, data = hake)
 # fit model with 1 breakpoint but formula different then in previous time series:
 
@@ -1134,7 +1134,7 @@ fm0 <- lm(R_0 ~ SSB, data = hake)
 
 ######cannot find "best_brk"
 strucc_hake <- lm(R_0 ~ SSB*(SSB < best_brk) + SSB*(SSB > best_brk), data = hake)
-fm1_coef <- coef(strucc_hake) 
+fm1_coef <- coef(strucc_hake)
 
 fit_strucc <- fitted(strucc_hake)
 
@@ -1157,8 +1157,8 @@ SRR_hake_strucchange <- SRR_hake+
 
 SRR_hake_strucchange
 
-#7.8. Visualize and compare with RMSE ---- 
-SRR_hake_models <- SRR_hake + 
+#7.8. Visualize and compare with RMSE ----
+SRR_hake_models <- SRR_hake +
   geom_vline(aes(col = "seg. neg bi",xintercept = brpt_hake_negbi/1000), linetype = 2)+
   geom_line(aes(y = coef_hake_negbi/1000, col = "seg. neg bi"))+
   geom_vline(aes(col = "segmented", xintercept = brpt_hake/1000), linetype = 2)+
@@ -1208,7 +1208,7 @@ saithe<-read.csv("SA_saithe_2021.csv", sep = ",")
 
 
 
-#lag SSB 3 times 
+#lag SSB 3 times
 saithe$SSB_lag <- lag(saithe$SSB)
 saithe$SSB_lag <- lag(saithe$SSB_lag)
 saithe$SSB_lag <- lag(saithe$SSB_lag)
@@ -1227,26 +1227,26 @@ fitI <- fitted(m1)
 
 #8.2. Beverton Holt ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="BevertonHolt")
-svR 
+svR
 ###stock-recruitement function (NB, the function is log based!)
 bh <- srFuns("BevertonHolt")
 srR_beverton <- nls(log(R)~log(bh(ssb,a,b)), data=ns_data, start=svR)
 
 
 ##results tell you significance of parameters and residual standard error
-#resisual standard error is the square root of the residual sum of squares 
+#resisual standard error is the square root of the residual sum of squares
 #divided by degrees of freedom
 summary(srR_beverton)
 cbind(estimates=coef(srR_beverton), confint(srR_beverton))
-### make predictions to then plot! 
+### make predictions to then plot!
 pR_beverton <- bh(ns_data$ssb, a=coef(srR_beverton))
 ns_data$pR_beverton <- pR_beverton
-###quasi-r2 value, if low model does not fit well! 
+###quasi-r2 value, if low model does not fit well!
 cor(bh(ns_data$ssb, a=coef(srR_beverton)), ns_data$R)^2
 
 #8.3. Ricker ----
 svR <- srStarts(R ~ ssb, data=ns_data, type="Ricker")
-svR 
+svR
 ##fit the Ricker function to data
 rckr <- srFuns("Ricker")
 srR_ricker <- nls(log(R)~log(rckr(ssb,a,b)), data=ns_data, start=svR)
@@ -1316,7 +1316,7 @@ bpts <- strucchange::breakpoints(R_3 ~ SSB_lag, data = saithe)
 
 
 plot(bpts)
-summary(bpts)  
+summary(bpts)
 
 
 opt_bpts <- function(x) {
@@ -1348,12 +1348,12 @@ for (i in 1: opt_brks) {
 }
 
 
-## fit null hypothesis model 
+## fit null hypothesis model
 fm0 <- lm(R_3 ~ SSB_lag, data = saithe)
 # fit model with 2 breakpoint but formula different than in previous time series:
 
 ######cannot find "best_brk"
-strucc_saithe <- lm(R_3 ~ SSB_lag*(SSB_lag <= best_brk[1]) + 
+strucc_saithe <- lm(R_3 ~ SSB_lag*(SSB_lag <= best_brk[1]) +
                       SSB_lag*(SSB_lag >= best_brk[1] & SSB_lag <= best_brk[2]) +
                       SSB_lag*(SSB_lag >= best_brk[2]), data = saithe)
 fm1_coef <- coef(strucc_saithe)
@@ -1369,7 +1369,7 @@ lines(saithe$SSB_lag[saithe$SSB_lag <= best_brk[1]], fit1, col = "orange")
 lines(saithe$SSB_lag[saithe$SSB_lag > best_brk[1] & saithe$SSB_lag<= best_brk[2]], fit2, col = "orange")
 lines(saithe$SSB_lag[saithe$SSB_lag > best_brk[2]], fit3, col = "orange")
 
-#1.8. Visualize and compare with RMSE ---- 
+#1.8. Visualize and compare with RMSE ----
 color_regimes_saithe <- NULL
 color_regimes_saithe[saithe$Year %in% c(1967:1975)] <- "steelblue3"
 color_regimes_saithe[saithe$Year %in% c(1975:2010)] <- "darkorange"
@@ -1382,7 +1382,7 @@ SRR_saithe <- ggplot(data = saithe, aes(x = SSB_lag/1000, y = R_3/1000))+
   theme_test()
 SRR_saithe
 
-SRR_saithe_models <- SRR_saithe + 
+SRR_saithe_models <- SRR_saithe +
   geom_vline(aes(col = "seg. neg bi",xintercept = brpt_saithe_negbi/1000), linetype = 2)+
   geom_line(aes(y = coef_saithe_negbi/1000, col = "seg. neg bi"))+
   geom_vline(aes(col = "segmented", xintercept = brpt_saithe/1000), linetype = 2)+
@@ -1417,8 +1417,8 @@ comparison
 #lowest RMSE has the simple segmented analysis
 #                 df        AIC        V3
 # m1                3 1326.07490  79692.51
-# srR_beverton      3   87.76174  82343.52     
-# srR_ricker        3   90.81553  82853.26      
+# srR_beverton      3   87.76174  82343.52
+# srR_ricker        3   90.81553  82853.26
 # seg_saithe        5 1328.94564  77819.88
 # seg_saithe_log    5   86.81357 171123.12
 # seg_saithe_negbi  5 1312.96880  77898.49
