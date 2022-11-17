@@ -42,10 +42,15 @@ x <- plaice$SSB_lag
 
 x2 <- plaice$temp_ns
 
+time <- plaice$Year
+
 mod <- gam(y ~ s(x,k=3)) 
 
 tmod_plaice <- thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
                        k = 4, a = 0.2, b = 0.8)                             
+#test_interaction
+loocv_thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
+                 k = 4, a = 0.2, b = 0.8,time =  time ) #[1] FALSE
 
 summary(tmod_plaice)
 
@@ -96,14 +101,22 @@ x <- hake$SSB
 
 x2 <- hake$temp_ns
 
+time <- hake$Year
+
 mod <- gam(y ~ s(x,k=3))
 
 tmod_hake <- thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
                           k = 4, a = 0.2, b = 0.8)                             
 
+
 summary(tmod_hake)
 
 tmod_hake$mr # 9.774661
+
+#test_interaction
+loocv_thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
+                 k = 4, a = 0.2, b = 0.8,time =  time )
+
 
 #Diagnostic plots
 tmod_hake$train_na <- "NA"
@@ -147,8 +160,14 @@ x2 <- herring$temp_ns
 
 mod <- gam(y ~ s(x,k=3)) 
 
+time <- herring$Year
+
 tmod_herring <- thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
                         k = 4, a = 0.2, b = 0.8)                           
+
+#test_interaction
+loocv_thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
+                 k = 4, a = 0.2, b = 0.8,time =  time )
 
 summary(tmod_herring)
 
@@ -194,6 +213,7 @@ x <- haddock$SSB
 
 x2 <- haddock$temp_ns
 
+time <- haddock$Year
 mod <- gam(y ~ s(x,k=3)) 
 
 tmod_haddock <- thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
@@ -202,6 +222,10 @@ tmod_haddock <- thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, 
 summary(tmod_haddock)
 
 tmod_haddock$mr # 10.36664
+
+#test_interaction
+loocv_thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
+                 k = 4, a = 0.2, b = 0.8,time =  time )
 
 #Diagnostic plots
 tmod_haddock$train_na <- "NA"
@@ -258,6 +282,8 @@ x <- saithe$SSB_lag
 
 x2 <- saithe$temp_ns
 
+time <- saithe$Year
+
 mod <- gam(y ~ s(x,k=3)) 
 
 tmod_saithe <- thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2", 
@@ -265,6 +291,10 @@ tmod_saithe <- thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, n
 summary(tmod_saithe)
 
 tmod_saithe$mr # 10.17838
+
+#test_interaction
+loocv_thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
+                 k = 4, a = 0.2, b = 0.8,time =  time )
 
 #Diagnostic plots
 tmod_saithe$train_na <- "NA"
@@ -313,6 +343,8 @@ x <- cod$SSB_lag
 
 x2 <- cod$temp_ns
 
+time <- cod$Year
+
 mod <- gam(y ~ s(x,k=3)) 
 
 tmod_cod <- thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
@@ -321,6 +353,11 @@ tmod_cod <- thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name
 summary(tmod_cod)
 
 tmod_cod$mr #10.11786
+
+#test_interaction
+loocv_thresh_gam(model = mod, ind_vec = y, press_vec = x, t_var = x2, name_t_var = "x2",
+                 k = 4, a = 0.2, b = 0.8,time =  time )
+
 
 #Diagnostic plots
 tmod_cod$train_na <- "NA"
