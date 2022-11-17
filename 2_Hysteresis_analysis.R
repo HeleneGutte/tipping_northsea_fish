@@ -23,6 +23,9 @@ opt_bpts <- function(x) {
 plaice <- read.csv("SA_plaice_2021.csv",
                    sep = ",")
 
+
+plaice$SSB_lag <- lag(plaice$SSB, 3)
+
 #color phases found in SSB with change point analyses
 color_regimes_plaice <- NULL
 color_regimes_plaice[plaice$Year %in% c(1957:1969)] <- "green4"
@@ -32,7 +35,7 @@ color_regimes_plaice[plaice$Year %in% c(2007:2021)] <- "purple"
 
 
 #plot
-Hyst_plaice <- ggplot(data = plaice, aes(x = F_2_6, y = SSB/1000))+
+Hyst_plaice <- ggplot(data = plaice, aes(x = F_2_6, y = SSB_lag/1000))+
   geom_hline(yintercept = 564.599, linetype="dashed",color="gray30")+
   geom_vline(xintercept = 0.21, linetype="dashed",color="gray30")+
   geom_label(x = 0.21, y = 220, label = expression("F"[MSY]), color="gray30", size = 3.5)+
@@ -60,22 +63,22 @@ Hyst_plaice <- ggplot(data = plaice, aes(x = F_2_6, y = SSB/1000))+
 Hyst_plaice
 
 ## 1.1.breakpoint analysis#####
-bpts <- strucchange::breakpoints(SSB/1000 ~  F_2_6, data = plaice)
+bpts <- strucchange::breakpoints(SSB_lag/1000 ~  F_2_6, data = plaice)
 
 plot(bpts)
 summary(bpts)
 
 bpts_sum <- summary(bpts)
 opt_brks <- opt_bpts(bpts_sum$RSS["BIC",])
-opt_brks #3
+opt_brks #2
 bpts2 <- strucchange:: breakpoints(bpts, breaks = opt_brks)
 best_brk <- plaice$F_2_6[bpts2$breakpoints]
 
-best_brk #0.390 0.600 0.182
+best_brk # 0.63 0.22
 
 par(mfrow = c(1,1))
 ci_mod <- confint(bpts, breaks = opt_brks)
-plot(SSB/1000 ~ F_2_6, data = plaice, type = "p")
+plot(SSB_lag/1000 ~ F_2_6, data = plaice, type = "p")
 for (i in 1: opt_brks) {
   abline(v = plaice$F_2_6[ci_mod$confint[i,2]], col = "blue")
   abline(v = plaice$F_2_6[ci_mod$confint[i,1]], col = "red", lty = 3)
@@ -84,35 +87,34 @@ for (i in 1: opt_brks) {
 #get corresponding years:
 best_brk_years <- plaice$Year[bpts2$breakpoints]
 best_brk_years
-#1972, 1991, 2009
+#1992, 2008
 
 ## plotting hyst break ----
 hyst_phases_plaice <- NULL
-hyst_phases_plaice[plaice$Year <= best_brk_years[1]] <- "green4"
-hyst_phases_plaice[plaice$Year > best_brk_years[1] & plaice$Year <= best_brk_years[2]] <- "steelblue3"
-hyst_phases_plaice[plaice$Year > best_brk_years[2] & plaice$Year <= best_brk_years[3]] <- "darkorange"
-hyst_phases_plaice[plaice$Year > best_brk_years[3]] <- "purple"
+hyst_phases_plaice[plaice$Year <= best_brk_years[1]] <- "steelblue3"
+hyst_phases_plaice[plaice$Year > best_brk_years[1] & plaice$Year <= best_brk_years[2]] <- "darkorange"
+hyst_phases_plaice[plaice$Year > best_brk_years[2]] <- "purple"
 
-plaice_breakpoint_hyst <- ggplot(data = plaice,aes(x = F_2_6, y = SSB/1000))+
+plaice_breakpoint_hyst <- ggplot(data = plaice, aes(x = F_2_6, y = SSB_lag/1000))+
   geom_path(colour = "grey80")+
   geom_hline(yintercept = 564.599, linetype="dashed",color="gray30")+
   geom_vline(xintercept = 0.21, linetype="dashed",color="gray30")+
-  geom_label(x = 0.21, y = 220, label = expression("F"[MSY]), color="gray30", size = 3.5)+
+  geom_label(x = 0.21, y = 1150, label = expression("F"[MSY]), color="gray30", size = 3.5)+
   geom_label(x = 0.55, y = 564.599, label = expression("MSY B"[trigger]), color="gray30", size = 3.5, fontface = "bold")+
   #geom_text_repel(aes(x = F_2_6, y = SSB/1000, label = Year), colour = hyst_phases_plaice)+
   geom_point(colour = hyst_phases_plaice)+
-  geom_smooth(data = plaice[plaice$Year <= best_brk_years[1], ], aes(x = F_2_6, y = SSB/1000), method = "lm", colour = "green4")+
-  geom_smooth(data = plaice[plaice$Year > best_brk_years[1] & plaice$Year <= best_brk_years[2], ], aes(x = F_2_6, y = SSB/1000), method = "lm", colour = "steelblue3")+
-  geom_smooth(data = plaice[plaice$Year > best_brk_years[2] & plaice$Year <= best_brk_years[3], ], aes(x = F_2_6, y = SSB/1000), method = "lm", colour = "darkorange")+
-  geom_smooth(data = plaice[plaice$Year > best_brk_years[3], ], aes(x = F_2_6, y = SSB/1000), method = "lm", colour = "purple")+
+  geom_smooth(data = plaice[plaice$Year <= best_brk_years[1], ], aes(x = F_2_6, y = SSB_lag/1000),
+              method = "lm", colour = "steelblue3")+
+  geom_smooth(data = plaice[plaice$Year > best_brk_years[1] & plaice$Year <= best_brk_years[2], ],
+              aes(x = F_2_6, y = SSB_lag/1000), method = "lm", colour = "darkorange")+
+  geom_smooth(data = plaice[plaice$Year > best_brk_years[2], ], aes(x = F_2_6, y = SSB_lag/1000),
+              method = "lm", colour = "purple")+
   labs(x = "", y = "")+
-  geom_text_repel(data = plaice[1, ], aes(label = Year), #1957
-                  point.padding = 0.2,nudge_y = 0, nudge_x = -0.1, size=3,col="gray30", segment.size =0.2 )+
-  geom_text_repel(data = plaice[17, ], aes(label = Year), #1973
-                  point.padding = 0.2, nudge_y =-145,nudge_x= 0, size=3,col="gray30", segment.size =0.2 )+
-  geom_text_repel(data = plaice[36, ], aes(label = Year), #1991
+  geom_text_repel(data = plaice[4, ], aes(label = Year), #1960
+                  point.padding = 0.2,nudge_y = 100, nudge_x = -0.05, size=3,col="gray30", segment.size =0.2 )+
+  geom_text_repel(data = plaice[37, ], aes(label = Year), #1991
                   point.padding = 0.2, nudge_y = 0, nudge_x = 0.2, size=3,col="gray30", segment.size =0.2 )+
-  geom_text_repel(data = plaice[54, ], aes(label = Year), #2007
+  geom_text_repel(data = plaice[53, ], aes(label = Year), #2007
                   point.padding = 0.2, nudge_y = 0,nudge_x= -0.2, size=3,col="gray30", segment.size =0.2 )+
   geom_text_repel(data = plaice[64, ], aes(label = Year), #2021
                   point.padding = 0.2, nudge_x = -0.1, size=3, col="gray30", segment.size =0.2 )+
@@ -458,6 +460,7 @@ df_saithe<-df_saithe %>% mutate(
   R_low = R_low/1000,
   R_high = R_high/1000)
 
+df_saithe$SSB_lag <- lag(df_saithe$SSB, 4)
 
 #color phases found in SSB with change point analyses
 colors_regimes <- NULL
@@ -489,22 +492,22 @@ Hyst_saithe <- ggplot(data = df_saithe, aes(x = F_4_7, y = SSB))+
 Hyst_saithe
 
 ## 5.1.breakpoint analysis#####
-bpts <- strucchange :: breakpoints(SSB ~ F_4_7, data = df_saithe)
+bpts <- strucchange :: breakpoints(SSB_lag ~ F_4_7, data = df_saithe)
 
 plot(bpts)
 summary(bpts)
 
 bpts_sum <- summary(bpts)
 opt_brks <- opt_bpts(bpts_sum$RSS["BIC",])
-opt_brks #2
+opt_brks #3
 bpts2 <- strucchange:: breakpoints(bpts, breaks = opt_brks)
 best_brk <- df_saithe$F_4_7[bpts2$breakpoints]
 
-best_brk #0.53 0.65
+best_brk #0.43 0.65 0.51
 
 par(mfrow = c(1,1))
 ci_mod <- confint(bpts, breaks = opt_brks)
-plot(SSB ~ F_4_7, data = df_saithe, type = "p")
+plot(SSB_lag ~ F_4_7, data = df_saithe, type = "p")
 for (i in 1: opt_brks) {
   abline(v = df_saithe$F_4_7[ci_mod$confint[i,2]], col = "blue")
   abline(v = df_saithe$F_4_7[ci_mod$confint[i,1]], col = "red", lty = 3)
@@ -513,34 +516,42 @@ for (i in 1: opt_brks) {
 
 best_brk_years <- df_saithe$Year[bpts2$breakpoints]
 
-best_brk_years #1975 1983
+best_brk_years #1973 1983 1996
 
 ## plotting hyst breakpoints ----
 
 hyst_phases_saithe <- NULL
-hyst_phases_saithe[df_saithe$Year <= best_brk_years[1]] <- "steelblue3"
-hyst_phases_saithe[df_saithe$Year > best_brk_years[1] & df_saithe$Year <= best_brk_years[2]] <- "darkorange"
-hyst_phases_saithe[df_saithe$Year > best_brk_years[2]] <- "purple"
+hyst_phases_saithe[df_saithe$Year <= best_brk_years[1]] <- "green4"
+hyst_phases_saithe[df_saithe$Year > best_brk_years[1] & df_saithe$Year <= best_brk_years[2]] <- "steelblue3"
+hyst_phases_saithe[df_saithe$Year > best_brk_years[2] & df_saithe$Year <= best_brk_years[3]] <- "darkorange"
+hyst_phases_saithe[df_saithe$Year > best_brk_years[3]] <- "purple"
 
-saithe_breakpoint_hyst <- ggplot(data = df_saithe, aes(x = F_4_7, y = SSB))+
+saithe_breakpoint_hyst <- ggplot(data = df_saithe, aes(x = F_4_7, y = SSB_lag))+
   geom_hline(yintercept = 149.098, linetype = "dashed", color = "gray30")+
   geom_vline(xintercept = 0.363, linetype = "dashed", color = "gray30")+
   geom_label(x = 0.363, y = 550, label = expression("F"[MSY]), color="gray30", size = 3.5)+
   geom_label(x = 0.1, y = 149.098,label = expression("MSY B"[trigger]), color="gray30", size = 3.5)+
   geom_path(colour = "grey80")+
   geom_point(colour = hyst_phases_saithe)+
-  geom_smooth(data = df_saithe[df_saithe$Year <= best_brk_years[1], ], aes(x = F_4_7, y = SSB), method = "lm", colour = "steelblue3")+
-  geom_smooth(data = df_saithe[df_saithe$Year > best_brk_years[1] & df_saithe$Year <= best_brk_years[2], ], aes(x = F_4_7, y = SSB), method = "lm", colour = "darkorange")+
-  geom_smooth(data = df_saithe[df_saithe$Year > best_brk_years[2], ], aes(x = F_4_7, y = SSB), method = "lm", colour = "purple")+
+  geom_smooth(data = df_saithe[df_saithe$Year <= best_brk_years[1], ], aes(x = F_4_7, y = SSB_lag),
+              method = "lm", colour = "green4")+
+  geom_smooth(data = df_saithe[df_saithe$Year > best_brk_years[1] & df_saithe$Year <= best_brk_years[2], ],
+              aes(x = F_4_7, y = SSB_lag), method = "lm", colour = "steelblue3")+
+  geom_smooth(data = df_saithe[df_saithe$Year > best_brk_years[2] & df_saithe$Year <= best_brk_years[3], ],
+              aes(x = F_4_7, y = SSB_lag), method = "lm", colour = "darkorange")+
+  geom_smooth(data = df_saithe[df_saithe$Year > best_brk_years[3], ], aes(x = F_4_7, y = SSB_lag),
+              method = "lm", colour = "purple")+
   labs(x = "", y = "") +
-  geom_text_repel(data = df_saithe[1, ], aes(label = Year), #1967
+  geom_text_repel(data = df_saithe[5, ], aes(label = Year), #1967
                   point.padding = 0.2, nudge_y =50, nudge_x= -0.2, col="gray30", size=3, segment.size = 0.2)+
-  geom_text_repel(data = df_saithe[10, ], aes(label = Year), #1976
+  geom_text_repel(data = df_saithe[8, ], aes(label = Year), #1974
                   point.padding = 0.2, nudge_y =0,nudge_x= 0.2,col="gray30", size=3, segment.size = 0.2)+
   geom_text_repel(data = df_saithe[18, ], aes(label = Year), #1984
                   point.padding = 0.2, nudge_y =0,nudge_x= 0.2,col="gray30", size=3, segment.size = 0.2)+
+  geom_text_repel(data = df_saithe[31, ], aes(label = Year), #1997
+                  point.padding = 0.2, nudge_y =-100,nudge_x= 0,col="gray30", size=3, segment.size = 0.2)+
   geom_text_repel(data = df_saithe[54, ], aes(label = Year), #2020
-                  point.padding = 0.1, nudge_y = -50,  nudge_x = -0.2, col="gray30", size=3, segment.size = 0.2)+
+                  point.padding = 0.1, nudge_y = -150,  nudge_x = -0.15, col="gray30", size=3, segment.size = 0.2)+
   xlim(0, 0.8)+
   theme_test()+
   theme(plot.tag.position = c(0.9, 0.9), plot.background = element_blank(),
@@ -551,7 +562,7 @@ saithe_breakpoint_hyst
 # 6.Cod ####
 cod <- read.csv("SA_cod_2021.csv",
                 sep = ",")
-
+cod$SSB_lag <- lag(cod$SSB, 5)
 #color phases found in SSB with change point analyses
 colors_regimes <- NULL
 colors_regimes[cod$Year %in% c(1963:1972)] <- "steelblue3"
@@ -585,7 +596,7 @@ Hyst_cod
 
 
 ## 6.1.breakpoint analysis #####
-bpts <- strucchange :: breakpoints(SSB/1000 ~ F_2_6, data = cod)
+bpts <- strucchange :: breakpoints(SSB_lag/1000 ~ F_2_6, data = cod)
 
 
 plot(bpts)
@@ -593,11 +604,12 @@ summary(bpts)
 
 bpts_sum <- summary(bpts)
 opt_brks <- opt_bpts(bpts_sum$RSS["BIC",])
-opt_brks #3
+opt_brks #5, allerdings ist der BIC Unterschied von 4 zu 5 nur 0.1, daher nehmen wir nur 4 breakpoints
+opt_brks <- 4
 bpts2 <- strucchange:: breakpoints(bpts, breaks = opt_brks)
 best_brk <- cod$F_2_6[bpts2$breakpoints]
 
-best_brk #0.81 1.03 1.16
+best_brk #0.81 1.03 1.14 0.66
 
 par(mfrow = c(1,1))
 ci_mod <- confint(bpts, breaks = opt_brks)
@@ -610,37 +622,46 @@ for (i in 1: opt_brks) {
 
 best_brk_years <- cod$Year[bpts2$breakpoints]
 
-best_brk_years #1972 1983 2000
+best_brk_years #1972 1983 1999, 2007
 
 ## plotting hyst breakpoints ----
 hyst_phases_cod <- NULL
-hyst_phases_cod[cod$Year <= best_brk_years[1]] <- "green4"
-hyst_phases_cod[cod$Year > best_brk_years[1] & cod$Year <= best_brk_years[2]] <- "steelblue3"
-hyst_phases_cod[cod$Year > best_brk_years[2] & cod$Year <= best_brk_years[3]] <- "darkorange"
-hyst_phases_cod[cod$Year > best_brk_years[3]] <- "purple"
+hyst_phases_cod[cod$Year <= best_brk_years[1]] <- "gold"
+hyst_phases_cod[cod$Year > best_brk_years[1] & cod$Year <= best_brk_years[2]] <- "green4"
+hyst_phases_cod[cod$Year > best_brk_years[2] & cod$Year <= best_brk_years[3]] <- "steelblue3"
+hyst_phases_cod[cod$Year > best_brk_years[3] & cod$Year <= best_brk_years[4]] <- "darkorange"
+hyst_phases_cod[cod$Year > best_brk_years[4]] <- "purple"
 
-cod_breakpoint_hyst <- ggplot(data = cod, aes(x = F_2_6, y = SSB/1000))+
+cod_breakpoint_hyst <- ggplot(data = cod, aes(x = F_2_6, y = SSB_lag/1000))+
   geom_hline(yintercept=97777/1000,linetype="dashed",color="gray30")+
   geom_vline(xintercept=0.28,linetype="dashed",color="gray30")+
   geom_label(aes(x = 0.28, y = 230), label = expression("F"[MSY]), color="gray30", size = 3.5)+
   geom_label(aes(x = 0.15, y = 97777/1000), label = expression("MSY B"[trigger]), color="gray30", size = 3.5)+
   geom_path(colour = "grey80")+
   geom_point(colour = hyst_phases_cod)+
-  geom_smooth(data = cod[cod$Year <= best_brk_years[1], ], aes(x = F_2_6, y = SSB/1000), method = "lm", colour = "green4")+
-  geom_smooth(data = cod[cod$Year > best_brk_years[1] & cod$Year <= best_brk_years[2], ], aes(x = F_2_6, y = SSB/1000), method = "lm", colour = "steelblue3")+
-  geom_smooth(data = cod[cod$Year > best_brk_years[2] & cod$Year <= best_brk_years[3], ], aes(x = F_2_6, y = SSB/1000), method = "lm", colour = "darkorange")+
-  geom_smooth(data = cod[cod$Year > best_brk_years[3], ], aes(x = F_2_6, y = SSB/1000), method = "lm", colour = "purple")+
+  geom_smooth(data = cod[cod$Year <= best_brk_years[1], ], aes(x = F_2_6, y = SSB_lag/1000),
+              method = "lm", colour = "gold")+
+  geom_smooth(data = cod[cod$Year > best_brk_years[1] & cod$Year <= best_brk_years[2], ],
+              aes(x = F_2_6, y = SSB_lag/1000), method = "lm", colour = "green4")+
+  geom_smooth(data = cod[cod$Year > best_brk_years[2] & cod$Year <= best_brk_years[3], ],
+              aes(x = F_2_6, y = SSB_lag/1000), method = "lm", colour = "steelblue3")+
+  geom_smooth(data = cod[cod$Year > best_brk_years[3] & cod$Year <= best_brk_years[4], ],
+              aes(x = F_2_6, y = SSB_lag/1000), method = "lm", colour = "darkorange")+
+  geom_smooth(data = cod[cod$Year > best_brk_years[4], ], aes(x = F_2_6, y = SSB_lag/1000),
+              method = "lm", colour = "purple")+
   labs(x = "", y = "") +
-  geom_text_repel(data = cod[1, ], aes(label = Year), #1963
-                  point.padding = 0.2, nudge_x = -0.1, nudge_y = 40,col="gray30",size=3,segment.size = 0.2)+
+  geom_text_repel(data = cod[6, ], aes(label = Year), #1963
+                  point.padding = 0.2, nudge_x = -0, nudge_y = -20,col="gray30",size=3,segment.size = 0.2)+
   geom_text_repel(data = cod[11, ], aes(label = Year), #1973
-                  point.padding = 0.2, nudge_y = , nudge_x = 0.2,col="gray30",size=3,segment.size = 0.2)+
+                  point.padding = 0.2, nudge_x = 0.1, nudge_y = 50, col="gray30",size=3,segment.size = 0.2)+
   geom_text_repel(data = cod[22, ], aes(label = Year), #1984
-                  point.padding = 0., nudge_y = 30, nudge_x = 0.3,col="gray30",size=3,segment.size = 0.2)+
-  geom_text_repel(data = cod[39, ], aes(label = Year), #2001
-                  point.padding = 0., nudge_y = 30, nudge_x = -0.2,col="gray30",size=3,segment.size = 0.2)+
+                  point.padding = 0., nudge_y = -10, nudge_x = -0.2,col="gray30",size=3,segment.size = 0.2)+
+  geom_text_repel(data = cod[38, ], aes(label = Year), #2000
+                  point.padding = 0., nudge_y = 30, nudge_x = 0.05,col="gray30",size=3,segment.size = 0.2)+
+  geom_text_repel(data = cod[46, ], aes(label = Year), #2008
+                  point.padding = 0., nudge_y = -5, nudge_x = 0.1,col="gray30",size=3,segment.size = 0.2)+
   geom_text_repel(data = cod[58, ], aes(label = Year), #2020
-                  point.padding = 0.1,nudge_y = 20,  nudge_x = 0,col="gray30",size=3,segment.size = 0.2)+
+                  point.padding = 0.05,nudge_y = 20,  nudge_x = 0,col="gray30",size=3,segment.size = 0.2)+
   xlim(0, 1.2)+
   theme_test()+
   theme(plot.tag.position = c(0.9, 0.9), plot.background = element_blank(),
