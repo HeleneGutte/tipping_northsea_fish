@@ -225,8 +225,81 @@ haddock <- arrange(haddock, SSB)
 dat <- haddock%>%
   dplyr::select(Year, R_0, SSB, r_log, ssb_log)
 names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
-rmse_mean_haddock <- cross_valid(dataset = dat, runs = 10)
+#rmse_mean_haddock <- cross_valid(dataset = dat, runs = 10)
 
+#set up rmse dataframe
+rmse_values_haddock <- data.frame("run" = c(1:10),
+                          "linear model" = c(1:10),
+                          "beverton"= c(1:10),
+                          "ricker"= c(1:10),
+                          "segmented"= c(1:10),
+                          "segmented log"= c(1:10),
+                          "segmented best glm"= c(1:10))
+
+for(i in 1:10){
+    #get training and test data set for each run
+    random_points <- sample(x = 1:length(dat$Year), size = 5)
+    train_data <- dat[-random_points, ]
+    test_data <- dat[random_points, ]
+
+    #linear model
+    m1 <- lm(R ~ SSB_lag, data = train_data)
+    fitI <- predict(m1, newdata = test_data)
+    rmse_values_haddock$linear.model[i] <- rmse(sim = fitI, obs = test_data$R)
+
+    #Beverton-Holt
+    # svR <- srStarts(R ~ SSB_lag, data=train_data, type="BevertonHolt")
+    # bh <- srFuns("BevertonHolt")
+    # srR_beverton <- nls(log(R)~log(bh(SSB_lag,a,b)), data=train_data, start=list(a = 76.79568, b = 5.458455e-06))
+    # cbind(estimates=coef(srR_beverton), confint(srR_beverton))
+    # pR_beverton <- bh(test_data$SSB_lag, a=coef(srR_beverton))
+    # rmse_values_haddock$beverton[i] <- rmse(sim = pR_beverton, obs = test_data$R)
+
+    #Ricker
+    svR <- srStarts(R ~ SSB_lag, data=train_data, type="Ricker")
+    ##fit the Ricker function to data
+    rckr <- srFuns("Ricker")
+    srR_ricker <- nls(log(R)~log(rckr(SSB_lag,a,b)), data=train_data, start=svR)
+    #for a and b
+    cbind(estimates=coef(srR_ricker),confint(srR_ricker))
+    ###prediction
+    pR_ricker <- rckr(test_data$SSB_lag, a=coef(srR_ricker))
+    rmse_values_haddock$ricker[i] <- rmse(sim = pR_ricker, obs = test_data$R)
+
+    #segmented
+    seg_plaice <- segmented::segmented(lm(R ~ SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
+                                       psi = mean(train_data$SSB_lag, na.rm = T))
+    fit_segmented <- predict.segmented(seg_plaice, newdata = test_data)
+    rmse_values_haddock$segmented[i] <- rmse(sim = fit_segmented, obs = test_data$R)
+
+    #segmented log
+    seg_plaice_log <- segmented::segmented(lm(R_log ~ SSB_lag_log, data = train_data), seg.Z =  ~ SSB_lag_log,
+                                           psi = mean(train_data$SSB_lag_log, na.rm = T))
+    fit_segmented_log <- predict.segmented(seg_plaice_log, newdata = test_data)
+    rmse_values_haddock$segmented.log[i] <- rmse(sim = fit_segmented_log, obs = test_data$R) #oder muss hier mit R_log verglichen werden?
+
+    #segmented best glm
+    seg_plaice_negbi <- segmented::segmented(glm.nb(R ~SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
+                                             psi = mean(train_data$SSB_lag, na.rm = T))
+    fit_segmented_negbi <- predict.segmented(seg_plaice_negbi, newdata = test_data)
+    rmse_values_haddock$segmented.best.glm[i] <- rmse(sim = fit_segmented_negbi, obs = test_data$R)
+
+
+}
+rmse_values_haddock
+
+rmse_values_haddock_means <- data.frame("linear model" = 0,
+                                       "beverton"= 0,
+                                       "ricker"= 0,
+                                       "segmented"= 0,
+                                       "segmented log"= 0,
+                                       "segmented best glm"= 0)
+for(i in 2:ncol(rmse_values_haddock)){
+  rmse_values_haddock_means[i-1] <- mean(rmse_values_haddock[, i])
+}
+rmse_values_haddock_means
+# linear.model  beverton                ricker     segmented     segmented.log     segmented.best.glm
+# 10679806      does not work yet       11057711   11064294      13722319           13722319
 
 # Herring ----
 herring <- read.csv("SA_herring_2021.csv",
@@ -252,18 +325,167 @@ hake$SSB_log <- log(hake$SSB)
 dat <- hake%>%
   dplyr::select(Year, R_0, SSB, r_log, SSB_log)
 names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
-rmse_mean_hake <- cross_valid(dataset = dat, runs = 10)
+#rmse_mean_hake <- cross_valid(dataset = dat, runs = 10)
+
+#set up rmse dataframe
+rmse_values_hake <- data.frame("run" = c(1:10),
+                                  "linear model" = c(1:10),
+                                  "beverton"= c(1:10),
+                                  "ricker"= c(1:10),
+                                  "segmented"= c(1:10),
+                                  "segmented log"= c(1:10),
+                                  "segmented best glm"= c(1:10))
+
+for(i in 1:10){
+  #get training and test data set for each run
+  random_points <- sample(x = 1:length(dat$Year), size = 5)
+  train_data <- dat[-random_points, ]
+  test_data <- dat[random_points, ]
+
+  #linear model
+  m1 <- lm(R ~ SSB_lag, data = train_data)
+  fitI <- predict(m1, newdata = test_data)
+  rmse_values_hake$linear.model[i] <- rmse(sim = fitI, obs = test_data$R)
+
+  #Beverton-Holt
+  # svR <- srStarts(R ~ SSB_lag, data=train_data, type="BevertonHolt")
+  # bh <- srFuns("BevertonHolt")
+  # srR_beverton <- nls(log(R)~log(bh(SSB_lag,a,b)), data=train_data, start=list(a = 76.79568, b = 5.458455e-06))
+  # cbind(estimates=coef(srR_beverton), confint(srR_beverton))
+  # pR_beverton <- bh(test_data$SSB_lag, a=coef(srR_beverton))
+  # rmse_values_haddock$beverton[i] <- rmse(sim = pR_beverton, obs = test_data$R)
+
+  #Ricker
+  svR <- srStarts(R ~ SSB_lag, data=train_data, type="Ricker")
+  ##fit the Ricker function to data
+  rckr <- srFuns("Ricker")
+  srR_ricker <- nls(log(R)~log(rckr(SSB_lag,a,b)), data=train_data, start=svR)
+  #for a and b
+  cbind(estimates=coef(srR_ricker),confint(srR_ricker))
+  ###prediction
+  pR_ricker <- rckr(test_data$SSB_lag, a=coef(srR_ricker))
+  rmse_values_hake$ricker[i] <- rmse(sim = pR_ricker, obs = test_data$R)
+
+  #segmented
+  seg_plaice <- segmented::segmented(lm(R ~ SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
+                                     psi = mean(train_data$SSB_lag, na.rm = T))
+  fit_segmented <- predict.segmented(seg_plaice, newdata = test_data)
+  rmse_values_hake$segmented[i] <- rmse(sim = fit_segmented, obs = test_data$R)
+
+  #segmented log
+  seg_plaice_log <- segmented::segmented(lm(R_log ~ SSB_lag_log, data = train_data), seg.Z =  ~ SSB_lag_log,
+                                         psi = mean(train_data$SSB_lag_log, na.rm = T))
+  fit_segmented_log <- predict.segmented(seg_plaice_log, newdata = test_data)
+  rmse_values_hake$segmented.log[i] <- rmse(sim = fit_segmented_log, obs = test_data$R) #oder muss hier mit R_log verglichen werden?
+
+  #segmented best glm
+  seg_plaice_negbi <- segmented::segmented(glm.nb(R ~SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
+                                           psi = mean(train_data$SSB_lag, na.rm = T))
+  fit_segmented_negbi <- predict.segmented(seg_plaice_negbi, newdata = test_data)
+  rmse_values_hake$segmented.best.glm[i] <- rmse(sim = fit_segmented_negbi, obs = test_data$R)
+
+
+}
+rmse_values_hake
+
+rmse_values_hake_means <- data.frame("linear model" = 0,
+                                        "beverton"= 0,
+                                        "ricker"= 0,
+                                        "segmented"= 0,
+                                        "segmented log"= 0,
+                                        "segmented best glm"= 0)
+for(i in 2:ncol(rmse_values_hake)){
+  rmse_values_hake_means[i-1] <- mean(rmse_values_hake[, i])
+}
+rmse_values_hake_means
+# linear.model    beverton            ricker    segmented     segmented.log   segmented.best.glm
+#    140645.2      Does not work yet  151445.9  133108.3      384647.6           384647.5
+
+
 
 # Saithe ----
 saithe<-read.csv("SA_saithe_2021.csv", sep = ",")
 #lag SSB 3 times
 saithe$SSB_lag <- lag(saithe$SSB, 3)
+saithe <- saithe[-c(1:3), ]
 saithe$r_log <- log(saithe$R_3)
 saithe$ssb_log <- log(saithe$SSB_lag)
-saithe<-arrange(saithe, SSB_lag)
+saithe <- arrange(saithe, SSB_lag)
 
 dat <- saithe%>%
   dplyr::select(Year, R_3, SSB_lag, r_log, ssb_log)
 names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
-rmse_mean_saithe <- cross_valid(dataset = dat, runs = 10)
+#rmse_mean_saithe <- cross_valid(dataset = dat, runs = 10)
+#set up rmse dataframe
+rmse_values_saithe <- data.frame("run" = c(1:10),
+                               "linear model" = c(1:10),
+                               "beverton"= c(1:10),
+                               "ricker"= c(1:10),
+                               "segmented"= c(1:10),
+                               "segmented log"= c(1:10),
+                               "segmented best glm"= c(1:10))
 
+for(i in 1:10){
+  #get training and test data set for each run
+  random_points <- sample(x = 1:length(dat$Year), size = 5)
+  train_data <- dat[-random_points, ]
+  test_data <- dat[random_points, ]
+
+  #linear model
+  m1 <- lm(R ~ SSB_lag, data = train_data)
+  fitI <- predict(m1, newdata = test_data)
+  rmse_values_saithe$linear.model[i] <- rmse(sim = fitI, obs = test_data$R)
+
+  #Beverton-Holt
+  # svR <- srStarts(R ~ SSB_lag, data=train_data, type="BevertonHolt")
+  # bh <- srFuns("BevertonHolt")
+  # srR_beverton <- nls(log(R)~log(bh(SSB_lag,a,b)), data=train_data, start=list(a = 76.79568, b = 5.458455e-06))
+  # cbind(estimates=coef(srR_beverton), confint(srR_beverton))
+  # pR_beverton <- bh(test_data$SSB_lag, a=coef(srR_beverton))
+  # rmse_values_saithe$beverton[i] <- rmse(sim = pR_beverton, obs = test_data$R)
+
+  #Ricker
+  svR <- srStarts(R ~ SSB_lag, data=train_data, type="Ricker")
+  ##fit the Ricker function to data
+  rckr <- srFuns("Ricker")
+  srR_ricker <- nls(log(R)~log(rckr(SSB_lag,a,b)), data=train_data, start=svR)
+  #for a and b
+  cbind(estimates=coef(srR_ricker),confint(srR_ricker))
+  ###prediction
+  pR_ricker <- rckr(test_data$SSB_lag, a=coef(srR_ricker))
+  rmse_values_saithe$ricker[i] <- rmse(sim = pR_ricker, obs = test_data$R)
+
+  #segmented
+  seg_plaice <- segmented::segmented(lm(R ~ SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
+                                     psi = mean(train_data$SSB_lag, na.rm = T))
+  fit_segmented <- predict.segmented(seg_plaice, newdata = test_data)
+  rmse_values_saithe$segmented[i] <- rmse(sim = fit_segmented, obs = test_data$R)
+
+  #segmented log
+  seg_plaice_log <- segmented::segmented(lm(R_log ~ SSB_lag_log, data = train_data), seg.Z =  ~ SSB_lag_log,
+                                         psi = mean(train_data$SSB_lag_log, na.rm = T))
+  fit_segmented_log <- predict.segmented(seg_plaice_log, newdata = test_data)
+  rmse_values_saithe$segmented.log[i] <- rmse(sim = fit_segmented_log, obs = test_data$R) #oder muss hier mit R_log verglichen werden?
+
+  #segmented best glm
+  seg_plaice_negbi <- segmented::segmented(glm.nb(R ~SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
+                                           psi = mean(train_data$SSB_lag, na.rm = T))
+  fit_segmented_negbi <- predict.segmented(seg_plaice_negbi, newdata = test_data)
+  rmse_values_saithe$segmented.best.glm[i] <- rmse(sim = fit_segmented_negbi, obs = test_data$R)
+
+
+}
+rmse_values_saithe
+
+rmse_values_saithe_means <- data.frame("linear model" = 0,
+                                     "beverton"= 0,
+                                     "ricker"= 0,
+                                     "segmented"= 0,
+                                     "segmented log"= 0,
+                                     "segmented best glm"= 0)
+for(i in 2:ncol(rmse_values_saithe)){
+  rmse_values_saithe_means[i-1] <- mean(rmse_values_saithe[, i])
+}
+rmse_values_saithe_means
+# linear.model    beverton                ricker     segmented     segmented.log   segmented.best.glm
+#    80643.13     does not work yet      83742.75     85792.69      163013.1             163013
