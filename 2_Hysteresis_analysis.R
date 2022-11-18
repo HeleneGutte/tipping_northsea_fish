@@ -36,6 +36,8 @@ ccf(df_saithe$SSB, df_saithe$F_4_7, type = "correlation") #4 years
 cod <- cod[-59,]
 ccf(cod$SSB, cod$F_2_6, type = "correlation") #5 years
 
+
+
 #Break point analysis ####
 opt_bpts <- function(x) {
   #x = bpts_sum$RSS["BIC",]
