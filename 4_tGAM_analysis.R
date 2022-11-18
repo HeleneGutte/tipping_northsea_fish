@@ -32,7 +32,7 @@ plaice <- merge(plaice,temp_ns, by = "Year", na.rm = T)
 
 #SSB_lag
 plaice$SSB_lag <- lag(plaice$SSB)
-plaice <- plaice[-1, ] 
+plaice <- plaice[-1, ]
 plaice <- arrange(plaice, SSB_lag)
 
 #tGAM
