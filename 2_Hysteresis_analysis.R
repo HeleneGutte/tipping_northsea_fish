@@ -3,6 +3,7 @@
 library(tidyverse)
 library(ggrepel)
 library(readxl)
+library(MASS)
 
 #load data
 #setwd("~/Desktop/Courses/1_Advanced fisheries science/Paper/All_data/Stock_Assessment_Data_2021")
