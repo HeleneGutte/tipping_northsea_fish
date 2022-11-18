@@ -185,8 +185,16 @@ names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
 #Use the self made function
 #You have to prepare a dataset containg: the variables Year, R, SSB_lag, R_log, SSB_lag_log
 #They MUST be named in the following way
+#NOTE: It can happen that beverton holt and ricker crash the function because of invalid input (wrong starting values),
+#       in that case please simply rerun the cross_valid function
 #names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
+
+
 rmse_mean_plaice <- cross_valid(dataset = dat, runs = 10)
+# linear.model  beverton  ricker  segmented     segmented.log     segmented.best.glm
+#     697169.1 700953.6 705647  751021.3       1386693            1386693
+
+
 
 # Cod ----
 cod <- read.csv("SA_cod_2021.csv",
@@ -195,32 +203,67 @@ cod <- cod %>%
   mutate( SSB_lag = lag(SSB))
 cod$r_log <- log(cod$R_1)
 cod$ssb_log <- log(cod$SSB_lag)
+cod <- arrange(cod, SSB_lag)
 
 
 #prepare data
-dat <- plaice[ ,c(1, 2, 13, 14, 15)]
+dat <- cod%>%
+  dplyr::select(Year, R_1, SSB_lag, r_log, ssb_log)
 
 names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
+
+rmse_mean_cod <- cross_valid(dataset = dat, runs = 10)
+# linear.model  beverton   ricker     segmented     segmented.log   segmented.best.glm
+#   326052.9    301658.1    302154.4  368146.7      659581.7           659581.6
 
 # Haddock ----
 haddock <- read.csv("SA_haddock_2021.csv",
                     sep = ",")
+haddock$r_log <- log(haddock$R_0)
+haddock$ssb_log <- log(haddock$SSB)
+haddock <- arrange(haddock, SSB)
+dat <- haddock%>%
+  dplyr::select(Year, R_0, SSB, r_log, ssb_log)
+names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
+rmse_mean_haddock <- cross_valid(dataset = dat, runs = 10)
+
 
 # Herring ----
 herring <- read.csv("SA_herring_2021.csv",
                     sep = ",")
 herring <- arrange(herring, SSB)
+herring$r_log <- log(herring$R_0)
+herring$SSB_lag_log <- log(herring$SSB)
+
+dat <- herring%>%
+  dplyr::select(Year, R_0, SSB, r_log, SSB_lag_log)
+names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
+rmse_mean_herring <- cross_valid(dataset = dat, runs = 10)
+# linear.model beverton   ricker      segmented     segmented.log   segmented.best.glm
+# 15220293      14001937    14551867  13080299      32896754           32896754
 
 # Hake ----
 hake <- read.csv("SA_hake_2021.csv", sep = ",")
 
 hake <- arrange(hake, SSB)
+hake$r_log <- log(hake$R_0)
+hake$SSB_log <- log(hake$SSB)
+
+dat <- hake%>%
+  dplyr::select(Year, R_0, SSB, r_log, SSB_log)
+names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
+rmse_mean_hake <- cross_valid(dataset = dat, runs = 10)
 
 # Saithe ----
 saithe<-read.csv("SA_saithe_2021.csv", sep = ",")
 #lag SSB 3 times
 saithe$SSB_lag <- lag(saithe$SSB, 3)
-
-
+saithe$r_log <- log(saithe$R_3)
+saithe$ssb_log <- log(saithe$SSB_lag)
 saithe<-arrange(saithe, SSB_lag)
+
+dat <- saithe%>%
+  dplyr::select(Year, R_3, SSB_lag, r_log, ssb_log)
+names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
+rmse_mean_saithe <- cross_valid(dataset = dat, runs = 10)
 
