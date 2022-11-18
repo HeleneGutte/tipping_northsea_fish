@@ -4,7 +4,41 @@ library(tidyverse)
 library(ggrepel)
 library(readxl)
 
+#load data
+#setwd("~/Desktop/Courses/1_Advanced fisheries science/Paper/All_data/Stock_Assessment_Data_2021")
+plaice <- read.csv("SA_plaice_2021.csv",
+                   sep = ",")
+df_hake <- read.csv("SA_hake_2021.csv", sep = ",")
+herring <- read.csv("SA_herring_2021.csv",
+                    sep = ",")
+haddock <- read.csv("SA_haddock_2021.csv",
+                    sep = ",")
+df_saithe<-read.csv("SA_saithe_2021.csv", sep = ",")
+cod <- read.csv("SA_cod_2021.csv",
+                sep = ",")
 
+#test for time lags (Ft-n) ####
+plaice <- plaice[-65,]
+ccf(plaice$SSB, plaice$F_2_6, type = "correlation") #3 years
+
+df_hake <- df_hake[-44,]
+ccf(hake$SSB, hake$F, type = "correlation") #No lag
+
+herring <- herring[-75,]
+ccf(herring$SSB, herring$F_2_6, type = "correlation") #No lag
+
+haddock <- haddock[-50,]
+ccf(haddock$SSB, haddock$F_2_4, type = "correlation") #No lag
+
+df_saithe <- df_saithe[-55,]
+ccf(df_saithe$SSB, df_saithe$F_4_7, type = "correlation") #4 years
+
+cod <- cod[-59,]
+ccf(cod$SSB, cod$F_2_6, type = "correlation") #5 years
+
+
+
+#Break point analysis ####
 opt_bpts <- function(x) {
   #x = bpts_sum$RSS["BIC",]
   n <- length(x)
@@ -17,7 +51,7 @@ opt_bpts <- function(x) {
   return(out)
 }
 
-#setwd("~/Desktop/Courses/1_Advanced fisheries science/Paper/All_data/Stock_Assessment_Data_2021")
+
 
 # 1.Plaice #####
 plaice <- read.csv("SA_plaice_2021.csv",
