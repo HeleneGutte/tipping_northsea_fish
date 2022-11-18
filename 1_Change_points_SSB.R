@@ -19,7 +19,7 @@ View(bcp.ssb_plaice$posterior.prob) #Point  51 , 53,56 probability higher than 0
 #opinion 53 and 56 shows only higher steepness, both represent same regime
 #Year:  2007, 2009,2012
 
-#Möllis Vorschlag: Do analysis without huge increase phase
+#Try analysis without huge increase phase
 newdata <- plaice%>%
   filter(Year<2009)
 
@@ -51,7 +51,6 @@ View(bcp.ssb_hake$posterior.prob)
 
 
 #3. Herring ----
-## 1. Total
 herring <- read.csv("SA_herring_2021.csv", sep = ",")
 View(herring)
 
@@ -70,29 +69,6 @@ summary(m.bcpSSB_herring)
 View(m.bcpSSB_herring$posterior.prob)
 #cpt:  20     67 (0.5)
 #Year: 1966   1983
-
-#Take 1966 and 1983??? --> from earlier result
-
-## 2. Test if there are more regimes in the original second regime (1964 - now) of Herring
-
-herring_new <- herring %>%
-  filter(Year>1963)
-#View(Herring)
-
-### cpt
-m.cptSSB2_herring<- cpt.mean(herring_new$SSB,penalty = "MBIC", pen.value = 0, method = "BinSeg")
-plot(m.cptSSB2_herring,  xlab="Years - starting 1964", ylab ="SSB",
-     main = "SSB_cpt_herring")
-cpts(m.cptSSB2_herring)
-# 3     20    34     37    55
-#       1966  1980  1983  2001
-
-m.bcpSSB2_herring<- bcp(y=herring_new$SSB)
-plot(m.bcpSSB2_herring,  main = "SSB_bcp_herring")
-summary(m.bcpSSB2_herring)
-View(m.bcpSSB_herring$posterior.prob)
-#cpt: 20     37
-#Year:1966   2000
 
 
 #4. Haddock ----
@@ -134,7 +110,7 @@ View(bcp.ssb_saithe$posterior.prob)
 #cpt:   2,     4,    9,    44 (0.6)
 #Year: 1968, 1970, 1975, 2010
 
-#First identified cpts would result in very short regimes -> take 9 as first cpt
+#First identified cpts would result in very short periods -> take 9 as first cpt
 
 #6. Cod ----
 cod <-  read.csv("SA_cod_2021.csv", sep =",")
