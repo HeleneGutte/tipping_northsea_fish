@@ -266,7 +266,7 @@ cod <- read.csv("SA_cod_2021.csv",
                    sep = ",")
 cod <- cod %>%
   mutate( SSB_lag = lag(SSB))
-
+cod <- arrange(cod, SSB_lag)
 
 color_regimes_cod <- NULL
 color_regimes_cod[cod$Year %in% c(1963:1972)] <- "darkorange"
@@ -501,7 +501,7 @@ comparison
 
 haddock <- read.csv("SA_haddock_2021.csv",
                        sep = ",")
-
+haddock <- arrange(haddock, SSB)
 
 color_regimes_haddock <- NULL
 color_regimes_haddock[haddock$Year %in% c(1972:2001)] <- "darkorange"
