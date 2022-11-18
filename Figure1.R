@@ -30,7 +30,7 @@ SSB_cod <- ggplot(cod)+
   geom_ribbon(cod_2, mapping = aes(x=Year, ymin = SSB_low/1000, ymax = SSB_high/1000),
               fill = "darkorange", alpha = 0.5)+
   geom_ribbon(cod_3, mapping = aes(x=Year, ymin = SSB_low/1000, ymax = SSB_high/1000),
-              fill = "purple")+
+              fill = "purple")+ 
   geom_line(aes(x = Year, y = SSB/1000), col = "black")+
   ylim(0, 350)+
   xlim(1947, 2022)+
