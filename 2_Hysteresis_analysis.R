@@ -22,7 +22,7 @@ plaice <- plaice[-65,]
 ccf(plaice$SSB, plaice$F_2_6, type = "correlation") #3 years
 
 df_hake <- df_hake[-44,]
-ccf(hake$SSB, hake$F, type = "correlation") #No lag
+ccf(df_hake$SSB, df_hake$F, type = "correlation") #No lag
 
 herring <- herring[-75,]
 ccf(herring$SSB, herring$F_2_6, type = "correlation") #No lag
