@@ -40,7 +40,7 @@ cross_valid <- function(dataset, runs) {
 
   for(i in 1:runs){
     #get training and test data set for each run
-    random_points <- sample(x = 1:length(dat$Year), size = 5)
+    random_points <- sample(x = 1:length(dat$Year), size = 3)
     train_data <- dat[-random_points, ]
     test_data <- dat[random_points, ]
 
@@ -63,7 +63,7 @@ cross_valid <- function(dataset, runs) {
     rckr <- srFuns("Ricker")
     srR_ricker <- nls(log(R)~log(rckr(SSB_lag,a,b)), data=train_data, start=svR)
     #for a and b
-    cbind(estimates=coef(srR_ricker),confint(srR_ricker))
+    cbind(estimates=coef(srR_ricker), confint(srR_ricker))
     ###prediction
     pR_ricker <- rckr(test_data$SSB_lag, a=coef(srR_ricker))
     rmse_values$ricker[i] <- rmse(sim = pR_ricker, obs = test_data$R)
@@ -81,10 +81,13 @@ cross_valid <- function(dataset, runs) {
     rmse_values$segmented.log[i] <- rmse(sim = fit_segmented_log, obs = test_data$R) #oder muss hier mit R_log verglichen werden?
 
     #segmented best glm
-    seg_negbi <- segmented::segmented(glm.nb(R ~SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
+    seg_negbi <- segmented::segmented(glm.nb(R ~ SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
                                       psi = mean(train_data$SSB_lag, na.rm = T))
     fit_segmented_negbi <- predict.segmented(seg_negbi, newdata = test_data)
     rmse_values$segmented.best.glm[i] <- rmse(sim = fit_segmented_negbi, obs = test_data$R)
+
+    #strucchange
+    #rmse_values$segmented.strucchange[i] <- rmse(sim = c(fit1, fit2, fit3), obs = plaice$R_age1)
   }
 
   for(i in 2:ncol(rmse_values)){
@@ -190,11 +193,10 @@ names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
 #names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
 
 
-rmse_mean_plaice <- cross_valid(dataset = dat, runs = 10)
+rmse_mean_plaice <- cross_valid(dataset = dat, runs = 30)
 # linear.model  beverton  ricker  segmented     segmented.log     segmented.best.glm
 #     697169.1 700953.6 705647  751021.3       1386693            1386693
-
-
+min(rmse_mean_plaice)
 
 # Cod ----
 cod <- read.csv("SA_cod_2021.csv",
@@ -212,10 +214,10 @@ dat <- cod%>%
 
 names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
 
-rmse_mean_cod <- cross_valid(dataset = dat, runs = 10)
+rmse_mean_cod <- cross_valid(dataset = dat, runs = 30)
 # linear.model  beverton   ricker     segmented     segmented.log   segmented.best.glm
 #   326052.9    301658.1    302154.4  368146.7      659581.7           659581.6
-
+min(rmse_mean_cod)
 # Haddock ----
 haddock <- read.csv("SA_haddock_2021.csv",
                     sep = ",")
@@ -234,7 +236,8 @@ rmse_values_haddock <- data.frame("run" = c(1:10),
                           "ricker"= c(1:10),
                           "segmented"= c(1:10),
                           "segmented log"= c(1:10),
-                          "segmented best glm"= c(1:10))
+                          "segmented best glm"= c(1:10),
+                          "strucchange" = c(1:10))
 
 for(i in 1:10){
     #get training and test data set for each run
@@ -284,6 +287,23 @@ for(i in 1:10){
     fit_segmented_negbi <- predict.segmented(seg_plaice_negbi, newdata = test_data)
     rmse_values_haddock$segmented.best.glm[i] <- rmse(sim = fit_segmented_negbi, obs = test_data$R)
 
+    #strucchange
+    # bpts <- strucchange::breakpoints(R ~ SSB_lag, data = train_data)
+    # bpts_sum <- summary(bpts)
+    # opt_brks <- opt_bpts(bpts_sum$RSS["BIC",])
+    # bpts2 <- strucchange::breakpoints(bpts, breaks = opt_brks)
+    # best_brk <- train_data$SSB_lag[bpts2$breakpoints]
+    # strucc_model <- lm(R ~ SSB_lag*(SSB_lag <= best_brk[1]) +
+    #                       SSB_lag*(SSB_lag >= best_brk[1] & SSB_lag <= best_brk[2]) +
+    #                       SSB_lag*(SSB_lag >= best_brk[2]), data = train_data)
+    # fm1_coef <- coef(strucc_model)
+    #
+    #
+    # fit1 <- (fm1_coef[1] + fm1_coef[3]) + (fm1_coef[2] + fm1_coef[6])*train_data$SSB_lag[train_data$SSB_lag <= best_brk[1]]
+    # fit2 <- (fm1_coef[1] + fm1_coef[4]) + (fm1_coef[2] + fm1_coef[7])*
+    #   train_data$SSB_lag[train_data$SSB_lag > best_brk[1] & train_data$SSB_lag <= best_brk[2]]
+    # fit3 <- (fm1_coef[1] + fm1_coef[5]) + (fm1_coef[2] + fm1_coef[8])*train_data$SSB_lag[train_data$SSB_lag> best_brk[2]]
+    # rmse_values_haddock$strucchange[i] <- rmse(sim = c(fit1, fit2, fit3), obs = test_data$R)
 
 }
 rmse_values_haddock
@@ -376,13 +396,32 @@ for(i in 1:10){
   seg_plaice_log <- segmented::segmented(lm(R_log ~ SSB_lag_log, data = train_data), seg.Z =  ~ SSB_lag_log,
                                          psi = mean(train_data$SSB_lag_log, na.rm = T))
   fit_segmented_log <- predict.segmented(seg_plaice_log, newdata = test_data)
-  rmse_values_hake$segmented.log[i] <- rmse(sim = fit_segmented_log, obs = test_data$R) #oder muss hier mit R_log verglichen werden?
+  rmse_values_hake$segmented.log[i] <- rmse(sim = fit_segmented_log, obs = test_data$R_log) #oder muss hier mit R_log verglichen werden?
 
   #segmented best glm
   seg_plaice_negbi <- segmented::segmented(glm.nb(R ~SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
                                            psi = mean(train_data$SSB_lag, na.rm = T))
   fit_segmented_negbi <- predict.segmented(seg_plaice_negbi, newdata = test_data)
   rmse_values_hake$segmented.best.glm[i] <- rmse(sim = fit_segmented_negbi, obs = test_data$R)
+
+  #strucchange
+  bpts <- strucchange::breakpoints(R ~ SSB_lag, data = train_data)
+  bpts_sum <- summary(bpts)
+  plot(bpts)
+  opt_brks <- opt_bpts(bpts_sum$RSS["BIC",])
+  bpts2 <- strucchange::breakpoints(bpts, breaks = opt_brks)
+  best_brk <- train_data$SSB_lag[bpts2$breakpoints]
+  strucc_model <- lm(R ~ SSB_lag*(SSB_lag <= best_brk[1]) +
+                       SSB_lag*(SSB_lag >= best_brk[1] & SSB_lag <= best_brk[2]) +
+                       SSB_lag*(SSB_lag >= best_brk[2]), data = train_data)
+  fm1_coef <- coef(strucc_model)
+
+
+  fit1 <- (fm1_coef[1] + fm1_coef[3]) + (fm1_coef[2] + fm1_coef[6])*train_data$SSB_lag[test_data$SSB_lag <= best_brk[1]]
+  fit2 <- (fm1_coef[1] + fm1_coef[4]) + (fm1_coef[2] + fm1_coef[7])*
+    train_data$SSB_lag[test_data$SSB_lag > best_brk[1] & test_data$SSB_lag <= best_brk[2]]
+  fit3 <- (fm1_coef[1] + fm1_coef[5]) + (fm1_coef[2] + fm1_coef[8])*test_data$SSB_lag[test_data$SSB_lag> best_brk[2]]
+  rmse_values_hake$strucchange[i] <- rmse(sim = c(fit1, fit2, fit3), obs = test_data$R)
 
 
 }
@@ -465,7 +504,7 @@ for(i in 1:10){
   seg_plaice_log <- segmented::segmented(lm(R_log ~ SSB_lag_log, data = train_data), seg.Z =  ~ SSB_lag_log,
                                          psi = mean(train_data$SSB_lag_log, na.rm = T))
   fit_segmented_log <- predict.segmented(seg_plaice_log, newdata = test_data)
-  rmse_values_saithe$segmented.log[i] <- rmse(sim = fit_segmented_log, obs = test_data$R) #oder muss hier mit R_log verglichen werden?
+  rmse_values_saithe$segmented.log[i] <- rmse(sim = fit_segmented_log, obs = test_data$R_log) #oder muss hier mit R_log verglichen werden?
 
   #segmented best glm
   seg_plaice_negbi <- segmented::segmented(glm.nb(R ~SSB_lag, data = train_data), seg.Z =  ~SSB_lag,
