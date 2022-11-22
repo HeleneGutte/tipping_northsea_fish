@@ -269,6 +269,7 @@ dat <- saithe%>%
   dplyr::select(Year, R_3, SSB_lag, r_log, ssb_log)
 names(dat) <- c("Year", "R", "SSB_lag", "R_log", "SSB_lag_log")
 
+
 cross_valid_saithe <- function(dataset) {
   rmse_values <- data.frame("run" = c(1:nrow(dataset)),
                             "linear model" = c(1:nrow(dataset)),
@@ -318,15 +319,15 @@ cross_valid_saithe <- function(dataset) {
     rmse_values_train$linear.model[i] <- rmse(sim = fitI, obs = train_data$R)
 
     #Beverton-Holt
-    # svR <- srStarts(R ~ SSB_lag, data=train_data, type="BevertonHolt")
-    # bh <- srFuns("BevertonHolt")
-    # srR_beverton <- nls(log(R)~log(bh(SSB_lag,a,b)), data=train_data, start=list(a = 76.9, b = 4.559477e-05))
-    # cbind(estimates=coef(srR_beverton), confint(srR_beverton))
-    # pR_beverton <- bh(test_data$SSB_lag, a=coef(srR_beverton))
-    # rmse_values$beverton[i] <- rmse(sim = pR_beverton, obs = test_data$R)
+    svR <- srStarts(R ~ SSB_lag, data=train_data, type="BevertonHolt")
+    bh <- srFuns("BevertonHolt")
+    srR_beverton <- nls(log(R)~log(bh(SSB_lag,a,b)), data=train_data, start=list(a = 6.972011, b = 5.770284e-05))
+    cbind(estimates=coef(srR_beverton), confint(srR_beverton))
+    pR_beverton <- bh(test_data$SSB_lag, a=coef(srR_beverton))
+    rmse_values$beverton[i] <- rmse(sim = pR_beverton, obs = test_data$R)
 
-    # pR_beverton <- bh(train_data$SSB_lag, a=coef(srR_beverton))
-    # rmse_values_train$beverton[i] <- rmse(sim = pR_beverton, obs = train_data$R)
+    pR_beverton <- bh(train_data$SSB_lag, a=coef(srR_beverton))
+    rmse_values_train$beverton[i] <- rmse(sim = pR_beverton, obs = train_data$R)
 
     #Ricker
     svR <- srStarts(R ~ SSB_lag, data=train_data, type="Ricker")
@@ -514,15 +515,15 @@ cross_valid_hake <- function(dataset) {
     rmse_values_train$linear.model[i] <- rmse(sim = fitI, obs = train_data$R)
 
     #Beverton-Holt
-     # svR <- srStarts(R ~ SSB_lag, data=train_data, type="BevertonHolt")
-     # bh <- srFuns("BevertonHolt")
-     # srR_beverton <- nls(log(R)~log(bh(SSB_lag,a,b)), data=train_data, start=list(a = 76.9, b = 4.559477e-05))
-     # cbind(estimates=coef(srR_beverton), confint(srR_beverton))
-     # pR_beverton <- bh(test_data$SSB_lag, a=coef(srR_beverton))
-     # rmse_values$beverton[i] <- rmse(sim = pR_beverton, obs = test_data$R)
-     #
-     # pR_beverton <- bh(train_data$SSB_lag, a=coef(srR_beverton))
-     # rmse_values_train$beverton[i] <- rmse(sim = pR_beverton, obs = train_data$R)
+     svR <- srStarts(R ~ SSB_lag, data=train_data, type="BevertonHolt")
+     bh <- srFuns("BevertonHolt")
+     srR_beverton <- nls(log(R)~log(bh(SSB_lag,a,b)), data=train_data, start=list(a = 102.2687, b = 0.0003152142))
+     cbind(estimates=coef(srR_beverton), confint(srR_beverton))
+     pR_beverton <- bh(test_data$SSB_lag, a=coef(srR_beverton))
+     rmse_values$beverton[i] <- rmse(sim = pR_beverton, obs = test_data$R)
+
+     pR_beverton <- bh(train_data$SSB_lag, a=coef(srR_beverton))
+     rmse_values_train$beverton[i] <- rmse(sim = pR_beverton, obs = train_data$R)
 
     #Ricker
     svR <- srStarts(R ~ SSB_lag, data=train_data, type="Ricker")
