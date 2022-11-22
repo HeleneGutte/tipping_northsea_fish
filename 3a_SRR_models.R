@@ -266,6 +266,7 @@ cod <- read.csv("SA_cod_2021.csv",
                    sep = ",")
 cod <- cod %>%
   mutate( SSB_lag = lag(SSB))
+cod <- cod[-1, ]
 cod <- arrange(cod, SSB_lag)
 
 color_regimes_cod <- NULL
@@ -383,10 +384,8 @@ brpt_ste_cod_negbi <- seg_cod_negbi$psi[3]
 #3.7. Strucchange ----
 bpts <- breakpoints(R_1 ~ SSB_lag, data = cod)
 
-
 plot(bpts)
 summary(bpts)
-
 
 opt_bpts <- function(x) {
   #x = bpts_sum$RSS["BIC",]
@@ -401,16 +400,16 @@ opt_bpts <- function(x) {
 }
 bpts_sum <- summary(bpts)
 opt_brks <- opt_bpts(bpts_sum$RSS["BIC",])
-opt_brks #2
+opt_brks #
 bpts2 <- breakpoints(bpts, breaks = opt_brks)
 best_brk <- cod$SSB_lag[bpts2$breakpoints]
 
-best_brk #177838  77792
+best_brk #98224
 
 par(mfrow = c(1,1))
 ci_mod <- confint(bpts, breaks = opt_brks)
 plot(R_1 ~ SSB_lag, data = cod, type = "p")
-for (i in 1: opt_brks) {
+for (i in 1:opt_brks) {
   abline(v = cod$SSB_lag[ci_mod$confint[i,2]], col = "blue")
   abline(v = cod$SSB_lag[ci_mod$confint[i,1]], col = "red", lty = 3)
   abline(v = cod$SSB_lag[ci_mod$confint[i,3]], col = "red", lty = 3)
@@ -425,12 +424,12 @@ fm0 <- lm(R_1 ~ SSB_lag, data = cod)
 
 ######cannot find "best_brk"
 #best_brk 1
-strucc_cod1 <- lm(R_1 ~ SSB_lag*(SSB_lag < best_brk[1]) + SSB_lag*(SSB_lag > best_brk[1]), data = cod)
+strucc_cod1 <- lm(R_1 ~ SSB_lag*(SSB_lag <= best_brk[1]) + SSB_lag*(SSB_lag > best_brk[1]), data = cod)
 fm1_coef1 <- coef(strucc_cod1)
 fit_strucc1 <- fitted(strucc_cod1)
 
 fit11 <- (fm1_coef1[1] + fm1_coef1[3]) + (fm1_coef1[2] + fm1_coef1[5])*cod$SSB_lag[cod$SSB_lag <= best_brk[1]]
-fit12 <- (fm1_coef1[1] + fm1_coef1[4]) + (fm1_coef1[2])*cod$SSB_lag[cod$SSB_lag>= best_brk[1]]
+fit12 <- (fm1_coef1[1] + fm1_coef1[4]) + (fm1_coef1[2])*cod$SSB_lag[cod$SSB_lag >= best_brk[1]]
 
 #brest_brk 2
 strucc_cod2 <- lm(R_1 ~ SSB_lag*(SSB_lag < best_brk[2]) + SSB_lag*(SSB_lag > best_brk[2]), data = cod)
@@ -447,6 +446,10 @@ lines(cod$SSB_lag[cod$SSB_lag >= best_brk[1]], fit12, col = "orange")
 lines(cod$SSB_lag[cod$SSB_lag <= best_brk[2]], fit21, col = "orange")
 lines(cod$SSB_lag[cod$SSB_lag >= best_brk[2]], fit22, col = "orange")
 
+lines(cod$SSB_lag[cod$SSB_lag <= best_brk[1]], fit_strucc1[1:bpts2[[1]]], col = "orange")
+lines(cod$SSB_lag[cod$SSB_lag >= best_brk[1]], fit_strucc1[bpts2[[1]]:nrow(cod)], col = "orange")
+
+
 #3.8. Visualize and compare with RMSE ----
 SRR_cod_models <- ggplot(ns_data, aes(SSB_lag/1000, R_1/1000000)) +
   geom_point(col=color_regimes_cod)+
@@ -458,7 +461,7 @@ SRR_cod_models <- ggplot(ns_data, aes(SSB_lag/1000, R_1/1000000)) +
   geom_line(data = ns_data, aes(ssb/1000,pR_ricker/1000000, col = "Ricker"), show.legend = TRUE)+ #Ricker
   geom_line(data=ns_data, aes(ssb/1000,pR_beverton/1000000, col = "Beverton-Holt"), show.legend = TRUE)+ #BH
   geom_line(data = ns_data, aes(ssb/1000, fitI/1000000, col = "Indipendence"), show.legend = T)+
-  geom_line(data = ns_data, aes(ssb/1000, fit_strucc/1000000, col = "strucchange"))+
+  geom_line(data = ns_data, aes(ssb/1000, fit_strucc1/1000000, col = "strucchange"))+
   labs(col = "Model")+
   ggtitle("Cod")
 
@@ -469,14 +472,14 @@ rmse <- function(sim, obs) {
 }
 
 comparison <- NULL
-comparison <- AIC(m1, srR_beverton, srR_ricker, seg_cod, seg_cod_log, seg_cod_negbi, strucc_cod)
+comparison <- AIC(m1, srR_beverton, srR_ricker, seg_cod, seg_cod_log, seg_cod_negbi, strucc_cod1)
 comparison[1, 3] <- rmse(sim = fitI, obs = cod$R_1)
-comparison[2, 3] <- rmse(sim = ns_data$pR_beverton[-1], obs = cod$R_1[-59])
-comparison[3, 3] <- rmse(sim = ns_data$pR_ricker[-1], obs = cod$R_1[-59])
+comparison[2, 3] <- rmse(sim = ns_data$pR_beverton, obs = cod$R_1)
+comparison[3, 3] <- rmse(sim = ns_data$pR_ricker, obs = cod$R_1)
 comparison[4, 3] <- rmse(sim = seg_cod$fitted.values, obs = cod$R_1)
 comparison[5, 3] <- rmse(sim = seg_cod_log$fitted.values, obs = cod$R_1)
 comparison[6, 3] <- rmse(sim = seg_cod_negbi$fitted.values, obs = cod$R_1)
-comparison[7, 3] <- rmse(sim = fit_strucc, obs = cod$R_1)
+comparison[7, 3] <- rmse(sim = fit_strucc1, obs = cod$R_1)
 comparison
 
 
